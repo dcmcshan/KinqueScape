@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import UnityWebGLViewer from "@/components/unity-webgl-viewer";
+import UnityWebGLComponent from "@/components/unity-webgl-component";
 import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
 
 export default function RoomDungeonPage() {
@@ -176,8 +176,7 @@ export default function RoomDungeonPage() {
         {/* 3D Room Visualization */}
         <div className="lg:col-span-2">
           <div className="mb-6">
-            <UnityWebGLViewer
-              modelPath={room.modelPath || "/attached_assets/7_16_2025.glb"}
+            <UnityWebGLComponent
               devices={devices}
               participants={participants}
               onDeviceClick={(device) => {
