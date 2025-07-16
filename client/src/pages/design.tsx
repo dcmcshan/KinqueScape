@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Save, Plus } from "lucide-react";
+import { Save, Plus, Palette, Package, Layers } from "lucide-react";
 import DesignTabs from "@/components/design-tabs";
+import PropsLibrary from "@/components/props-library";
 import type { EscapeRoomDesign } from "@shared/schema";
 
 export default function DesignPage() {
@@ -144,8 +146,54 @@ export default function DesignPage() {
         </div>
       )}
 
-      {/* Design Tools */}
-      <DesignTabs onSave={handleSaveDesign} />
+      {/* Design Studio Tabs */}
+      <Tabs defaultValue="canvas" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="canvas" className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Design Canvas
+          </TabsTrigger>
+          <TabsTrigger value="props" className="flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            Smart Props Library
+          </TabsTrigger>
+          <TabsTrigger value="layers" className="flex items-center gap-2">
+            <Layers className="w-4 h-4" />
+            Layer Manager
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="canvas" className="mt-6">
+          <DesignTabs onSave={handleSaveDesign} />
+        </TabsContent>
+
+        <TabsContent value="props" className="mt-6">
+          <div className="h-[800px] border border-border rounded-lg">
+            <PropsLibrary onAddProp={(prop) => {
+              toast({
+                title: "Prop Added",
+                description: `${prop.name} added to your design palette`,
+              });
+            }} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="layers" className="mt-6">
+          <div className="h-[800px] border border-border rounded-lg p-6 flex items-center justify-center">
+            <div className="text-center">
+              <Layers className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">Layer Manager</h3>
+              <p className="text-muted-foreground">
+                Organize your room elements into layers for better design control.
+                This feature will help you manage lighting, props, and interactive elements.
+              </p>
+              <Button className="mt-4" variant="outline">
+                Coming Soon
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Empty State */}
       {(!designs || designs.length === 0) && !createDesignMutation.isPending && (
