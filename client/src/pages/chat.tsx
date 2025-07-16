@@ -13,6 +13,12 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface ApiUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -24,13 +30,17 @@ export default function ChatPage() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [totalCost, setTotalCost] = useState(0);
+  const [sessionTokens, setSessionTokens] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        setTimeout(() => {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }, 100);
       }
     }
   };
@@ -71,6 +81,16 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
+
+      // Calculate cost from usage data
+      if (data.usage) {
+        const usage = data.usage as ApiUsage;
+        // Venice AI pricing: ~$0.0015 per 1K tokens for Llama-3.3-70B
+        const costPerToken = 0.0015 / 1000;
+        const requestCost = (usage.total_tokens || 0) * costPerToken;
+        setTotalCost(prev => prev + requestCost);
+        setSessionTokens(prev => prev + (usage.total_tokens || 0));
+      }
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -116,6 +136,8 @@ export default function ChatPage() {
       content: "Chat cleared! I'm ready to help you with KinqueScape development, adult entertainment concepts, and smart device integration. What would you like to discuss?",
       timestamp: new Date()
     }]);
+    setTotalCost(0);
+    setSessionTokens(0);
   };
 
   return (
@@ -216,6 +238,21 @@ export default function ChatPage() {
                 )}
               </div>
             </ScrollArea>
+
+            {/* Cost Tracker */}
+            {(totalCost > 0 || sessionTokens > 0) && (
+              <div className="flex-shrink-0 border-t border-border px-4 py-2">
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4">
+                    <span>Session Cost: ${totalCost.toFixed(4)}</span>
+                    <span>Tokens: {sessionTokens.toLocaleString()}</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    Venice AI
+                  </Badge>
+                </div>
+              </div>
+            )}
 
             {/* Input Area */}
             <div className="flex-shrink-0 border-t border-border p-4">
