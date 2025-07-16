@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three-stdlib';
+import { OrbitControls } from 'three-stdlib';
 import type { RoomDevice, RoomParticipant } from '@shared/schema';
 
 interface ThreeRoomRendererProps {
@@ -20,6 +21,7 @@ export default function ThreeRoomRenderer({
   const sceneRef = useRef<THREE.Scene>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
+  const controlsRef = useRef<OrbitControls>();
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -47,6 +49,18 @@ export default function ThreeRoomRenderer({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
     mountRef.current.appendChild(renderer.domElement);
+
+    // Camera controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enableZoom = true;
+    controls.enableRotate = true;
+    controls.enablePan = true;
+    controls.maxDistance = 20;
+    controls.minDistance = 2;
+    controls.maxPolarAngle = Math.PI / 2.2; // Prevent going below floor
+    controlsRef.current = controls;
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
@@ -77,6 +91,7 @@ export default function ThreeRoomRenderer({
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
+      controls.update(); // Update controls for damping
       renderer.render(scene, camera);
     };
     animate();
@@ -90,6 +105,7 @@ export default function ThreeRoomRenderer({
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      controls.update();
     };
     window.addEventListener('resize', handleResize);
 
@@ -179,8 +195,7 @@ function createDungeonRoom(scene: THREE.Scene) {
 
   // Enhanced stone wall material
   const wallMaterial = new THREE.MeshLambertMaterial({ 
-    color: 0x5a4a3a,
-    roughness: 0.8 
+    color: 0x5a4a3a
   });
 
   // Front wall
