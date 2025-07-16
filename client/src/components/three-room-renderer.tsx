@@ -78,8 +78,8 @@ export default function ThreeRoomRenderer({
 
     // Add devices to scene
     devices.forEach(device => {
-      const deviceMesh = createDeviceMesh(device);
-      scene.add(deviceMesh);
+      const deviceGroup = createDeviceMesh(device);
+      scene.add(deviceGroup);
     });
 
     // Add participants to scene
@@ -88,10 +88,24 @@ export default function ThreeRoomRenderer({
       scene.add(participantMesh);
     });
 
-    // Animation loop
+    // Animation loop with heartbeat animation
     const animate = () => {
       requestAnimationFrame(animate);
       controls.update(); // Update controls for damping
+      
+      // Animate heartbeat indicators
+      const time = Date.now() * 0.005;
+      scene.traverse((child) => {
+        if (child.userData.type === 'heartbeat') {
+          // Pulse effect: scale and opacity based on sine wave
+          const pulse = Math.sin(time * 2) * 0.5 + 0.5; // 0 to 1
+          child.scale.setScalar(0.8 + pulse * 0.4); // Scale from 0.8 to 1.2
+          if (child.material) {
+            child.material.opacity = 0.6 + pulse * 0.4; // Opacity from 0.6 to 1.0
+          }
+        }
+      });
+      
       renderer.render(scene, camera);
     };
     animate();
@@ -130,8 +144,8 @@ export default function ThreeRoomRenderer({
 
     // Add new device meshes
     devices.forEach(device => {
-      const deviceMesh = createDeviceMesh(device);
-      sceneRef.current!.add(deviceMesh);
+      const deviceGroup = createDeviceMesh(device);
+      sceneRef.current!.add(deviceGroup);
     });
   }, [devices]);
 
@@ -147,8 +161,8 @@ export default function ThreeRoomRenderer({
 
     // Add new participant meshes
     participants.forEach(participant => {
-      const participantMesh = createParticipantMesh(participant);
-      sceneRef.current!.add(participantMesh);
+      const participantGroup = createParticipantMesh(participant);
+      sceneRef.current!.add(participantGroup);
     });
   }, [participants]);
 
@@ -269,48 +283,245 @@ function addMedievalWindow(scene: THREE.Scene, x: number, y: number, z: number) 
   scene.add(hBar);
 }
 
-function createDeviceMesh(device: RoomDevice): THREE.Mesh {
-  let geometry: THREE.BufferGeometry;
-  let material: THREE.Material;
-
+function createDeviceMesh(device: RoomDevice): THREE.Group {
+  const deviceGroup = new THREE.Group();
+  let mainMesh: THREE.Mesh;
+  let iconColor: number;
+  
   switch (device.type) {
     case 'light':
-      geometry = new THREE.SphereGeometry(0.1, 8, 8);
-      material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+      // Light bulb shape
+      const bulbGeometry = new THREE.SphereGeometry(0.08, 12, 12);
+      const bulbMaterial = new THREE.MeshLambertMaterial({ 
+        color: device.status === 'online' ? 0xffff00 : 0x666666,
+        emissive: device.status === 'online' ? 0xffff00 : 0x000000,
+        emissiveIntensity: 0.3
+      });
+      mainMesh = new THREE.Mesh(bulbGeometry, bulbMaterial);
+      
+      // Light fixture
+      const fixtureGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.05, 8);
+      const fixtureMaterial = new THREE.MeshLambertMaterial({ color: 0x888888 });
+      const fixture = new THREE.Mesh(fixtureGeometry, fixtureMaterial);
+      fixture.position.y = 0.1;
+      deviceGroup.add(fixture);
+      iconColor = 0xffff00;
       break;
+      
     case 'camera':
-      geometry = new THREE.BoxGeometry(0.15, 0.1, 0.1);
-      material = new THREE.MeshLambertMaterial({ color: 0x333333 });
+      // Camera body
+      const cameraGeometry = new THREE.BoxGeometry(0.15, 0.1, 0.12);
+      const cameraMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+      mainMesh = new THREE.Mesh(cameraGeometry, cameraMaterial);
+      
+      // Camera lens
+      const lensGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.02, 16);
+      const lensMaterial = new THREE.MeshLambertMaterial({ color: 0x111111 });
+      const lens = new THREE.Mesh(lensGeometry, lensMaterial);
+      lens.rotation.x = Math.PI / 2;
+      lens.position.z = 0.07;
+      deviceGroup.add(lens);
+      
+      // Status LED
+      const ledGeometry = new THREE.SphereGeometry(0.01, 8, 8);
+      const ledMaterial = new THREE.MeshLambertMaterial({ 
+        color: device.status === 'online' ? 0x00ff00 : 0xff0000,
+        emissive: device.status === 'online' ? 0x00ff00 : 0xff0000,
+        emissiveIntensity: 0.5
+      });
+      const led = new THREE.Mesh(ledGeometry, ledMaterial);
+      led.position.set(0.06, 0.04, 0.05);
+      deviceGroup.add(led);
+      iconColor = 0x666666;
       break;
+      
     case 'sensor':
-      geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 8);
-      material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+      // Sensor body
+      const sensorGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.12, 8);
+      const sensorMaterial = new THREE.MeshLambertMaterial({ 
+        color: device.status === 'online' ? 0x00ff00 : 0x666666 
+      });
+      mainMesh = new THREE.Mesh(sensorGeometry, sensorMaterial);
+      
+      // Sensor top
+      const topGeometry = new THREE.SphereGeometry(0.03, 8, 8);
+      const topMaterial = new THREE.MeshLambertMaterial({ color: 0x444444 });
+      const top = new THREE.Mesh(topGeometry, topMaterial);
+      top.position.y = 0.08;
+      deviceGroup.add(top);
+      iconColor = 0x00ff00;
       break;
+      
     case 'lock':
-      geometry = new THREE.BoxGeometry(0.2, 0.3, 0.1);
-      material = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+      // Lock body
+      const lockGeometry = new THREE.BoxGeometry(0.2, 0.25, 0.08);
+      const lockMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+      mainMesh = new THREE.Mesh(lockGeometry, lockMaterial);
+      
+      // Lock shackle
+      const shackleGeometry = new THREE.TorusGeometry(0.06, 0.02, 8, 16, Math.PI);
+      const shackleMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
+      const shackle = new THREE.Mesh(shackleGeometry, shackleMaterial);
+      shackle.position.y = 0.1;
+      shackle.rotation.x = Math.PI;
+      deviceGroup.add(shackle);
+      iconColor = 0x8B4513;
       break;
+      
+    case 'sound':
+      // Speaker cone
+      const speakerGeometry = new THREE.ConeGeometry(0.08, 0.15, 12);
+      const speakerMaterial = new THREE.MeshLambertMaterial({ color: 0x444444 });
+      mainMesh = new THREE.Mesh(speakerGeometry, speakerMaterial);
+      
+      // Speaker grill
+      const grillGeometry = new THREE.CylinderGeometry(0.09, 0.09, 0.02, 16);
+      const grillMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 });
+      const grill = new THREE.Mesh(grillGeometry, grillMaterial);
+      grill.position.y = 0.08;
+      deviceGroup.add(grill);
+      iconColor = 0x444444;
+      break;
+      
     default:
-      geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-      material = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+      // Generic device
+      const genericGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+      const genericMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+      mainMesh = new THREE.Mesh(genericGeometry, genericMaterial);
+      iconColor = 0xff0000;
   }
-
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(device.x || 0, device.y || 0, device.z || 0);
-  mesh.userData = { type: 'device', device };
-  mesh.castShadow = true;
-
-  return mesh;
+  
+  mainMesh.castShadow = true;
+  deviceGroup.add(mainMesh);
+  
+  // Add device name label
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d')!;
+  canvas.width = 256;
+  canvas.height = 64;
+  context.fillStyle = '#ffffff';
+  context.font = '16px Arial';
+  context.textAlign = 'center';
+  context.fillText(device.name || 'Device', 128, 30);
+  context.fillStyle = device.status === 'online' ? '#00ff00' : '#ff0000';
+  context.fillText(device.status || 'offline', 128, 50);
+  
+  const labelTexture = new THREE.CanvasTexture(canvas);
+  const labelMaterial = new THREE.SpriteMaterial({ map: labelTexture });
+  const labelSprite = new THREE.Sprite(labelMaterial);
+  labelSprite.position.set(0, 0.3, 0);
+  labelSprite.scale.set(0.5, 0.125, 1);
+  deviceGroup.add(labelSprite);
+  
+  // Position the device group
+  deviceGroup.position.set(device.x || 0, device.y || 0, device.z || 0);
+  deviceGroup.userData = { type: 'device', device };
+  
+  return deviceGroup;
 }
 
-function createParticipantMesh(participant: RoomParticipant): THREE.Mesh {
-  const geometry = new THREE.CapsuleGeometry(0.3, 1.5, 4, 8);
-  const material = new THREE.MeshLambertMaterial({ color: 0x0080ff });
+function createParticipantMesh(participant: RoomParticipant): THREE.Group {
+  const stickFigure = new THREE.Group();
   
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(participant.x || 0, participant.y || 0, participant.z || 0);
-  mesh.userData = { type: 'participant', participant };
-  mesh.castShadow = true;
-
-  return mesh;
+  // Stick figure material
+  const stickMaterial = new THREE.MeshLambertMaterial({ color: 0x0080ff });
+  const jointMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff80 });
+  
+  // Head
+  const headGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+  const head = new THREE.Mesh(headGeometry, jointMaterial);
+  head.position.set(0, 1.6, 0);
+  head.castShadow = true;
+  stickFigure.add(head);
+  
+  // Body (torso)
+  const bodyGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8);
+  const body = new THREE.Mesh(bodyGeometry, stickMaterial);
+  body.position.set(0, 1.0, 0);
+  body.castShadow = true;
+  stickFigure.add(body);
+  
+  // Arms
+  const armGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8);
+  
+  // Left arm
+  const leftArm = new THREE.Mesh(armGeometry, stickMaterial);
+  leftArm.position.set(-0.3, 1.2, 0);
+  leftArm.rotation.z = Math.PI / 4;
+  leftArm.castShadow = true;
+  stickFigure.add(leftArm);
+  
+  // Right arm
+  const rightArm = new THREE.Mesh(armGeometry, stickMaterial);
+  rightArm.position.set(0.3, 1.2, 0);
+  rightArm.rotation.z = -Math.PI / 4;
+  rightArm.castShadow = true;
+  stickFigure.add(rightArm);
+  
+  // Legs
+  const legGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.8, 8);
+  
+  // Left leg
+  const leftLeg = new THREE.Mesh(legGeometry, stickMaterial);
+  leftLeg.position.set(-0.15, 0.1, 0);
+  leftLeg.castShadow = true;
+  stickFigure.add(leftLeg);
+  
+  // Right leg
+  const rightLeg = new THREE.Mesh(legGeometry, stickMaterial);
+  rightLeg.position.set(0.15, 0.1, 0);
+  rightLeg.castShadow = true;
+  stickFigure.add(rightLeg);
+  
+  // Joint spheres for better visibility
+  const jointGeometry = new THREE.SphereGeometry(0.08, 6, 6);
+  
+  // Shoulder joints
+  const leftShoulder = new THREE.Mesh(jointGeometry, jointMaterial);
+  leftShoulder.position.set(-0.2, 1.4, 0);
+  stickFigure.add(leftShoulder);
+  
+  const rightShoulder = new THREE.Mesh(jointGeometry, jointMaterial);
+  rightShoulder.position.set(0.2, 1.4, 0);
+  stickFigure.add(rightShoulder);
+  
+  // Hip joint
+  const hip = new THREE.Mesh(jointGeometry, jointMaterial);
+  hip.position.set(0, 0.5, 0);
+  stickFigure.add(hip);
+  
+  // Position the stick figure
+  stickFigure.position.set(participant.positionX || 0, participant.positionY || -1, participant.positionZ || 0);
+  stickFigure.userData = { type: 'participant', participant };
+  
+  // Add name label above head
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d')!;
+  canvas.width = 256;
+  canvas.height = 64;
+  context.fillStyle = '#ffffff';
+  context.font = '24px Arial';
+  context.textAlign = 'center';
+  context.fillText(participant.participantName || 'Unknown', 128, 40);
+  
+  const nameTexture = new THREE.CanvasTexture(canvas);
+  const nameMaterial = new THREE.SpriteMaterial({ map: nameTexture });
+  const nameSprite = new THREE.Sprite(nameMaterial);
+  nameSprite.position.set(0, 2.2, 0);
+  nameSprite.scale.set(1, 0.25, 1);
+  stickFigure.add(nameSprite);
+  
+  // Add heartbeat indicator above name
+  const heartGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+  const heartMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0xff0000,
+    transparent: true,
+    opacity: 0.8
+  });
+  const heartbeat = new THREE.Mesh(heartGeometry, heartMaterial);
+  heartbeat.position.set(0, 2.6, 0);
+  heartbeat.userData = { type: 'heartbeat', participantId: participant.id };
+  stickFigure.add(heartbeat);
+  
+  return stickFigure;
 }

@@ -614,15 +614,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const roomId = parseInt(req.params.roomId);
       const participantId = parseInt(req.params.participantId);
       
-      // Generate realistic biometric data
-      const heartRate = 70 + Math.random() * 50; // 70-120 BPM
-      const hrv = 20 + Math.random() * 40; // 20-60 ms
-      const batteryLevel = 85 + Math.random() * 15; // 85-100%
+      // Generate realistic biometric data with escape room stress simulation
+      const baseHeartRate = 75 + Math.random() * 20; // 75-95 base
+      const stressMultiplier = 1 + Math.random() * 0.5; // 1.0-1.5x stress
+      const heartRate = baseHeartRate * stressMultiplier;
+      
+      const hrv = Math.max(15, 50 - (heartRate - 75) * 0.5); // Lower HRV = higher stress
+      const oxygenSaturation = 96 + Math.random() * 4; // 96-100%
+      const skinTemperature = 3600 + Math.random() * 200; // 36-38°C * 100
+      const stepCount = Math.floor(Math.random() * 50) + 10; // 10-60 steps
+      const caloriesBurned = Math.floor(stepCount * 0.04); // ~0.04 cal per step
+      const batteryLevel = Math.max(20, 100 - Math.random() * 30); // 70-100%
       
       const biometricData = await storage.createBiometricData({
         participantId,
         heartRate: Math.round(heartRate),
         hrv: Math.round(hrv),
+        stressLevel: Math.min(100, Math.round((heartRate - 60) * 1.5)), // Stress scale 1-100
+        oxygenSaturation: Math.round(oxygenSaturation),
+        skinTemperature: Math.round(skinTemperature),
+        stepCount,
+        caloriesBurned,
         batteryLevel: Math.round(batteryLevel),
       });
       
@@ -717,5 +729,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Start automatic biometric simulation
+  startBiometricSimulation();
+  
   return httpServer;
+}
+
+// Automatic biometric simulation function
+async function startBiometricSimulation() {
+  setInterval(async () => {
+    try {
+      // Get all active participants from all rooms
+      const rooms = await storage.getRoomsByMasterId(1); // Use master user ID 1
+      for (const room of rooms) {
+        const participants = await storage.getRoomParticipants(room.id);
+        
+        for (const participant of participants) {
+          if (participant.isActive) {
+            // Generate realistic biometric data with escape room stress simulation
+            const baseHeartRate = 75 + Math.random() * 20; // 75-95 base
+            const stressMultiplier = 1 + Math.random() * 0.3; // 1.0-1.3x stress
+            const heartRate = baseHeartRate * stressMultiplier;
+            
+            const hrv = Math.max(15, 50 - (heartRate - 75) * 0.5); // Lower HRV = higher stress
+            const oxygenSaturation = 96 + Math.random() * 4; // 96-100%
+            const skinTemperature = 3600 + Math.random() * 200; // 36-38°C * 100
+            const stepCount = Math.floor(Math.random() * 10) + 1; // 1-10 steps per interval
+            const caloriesBurned = Math.floor(stepCount * 0.04); // ~0.04 cal per step
+            const batteryLevel = Math.max(20, 100 - Math.random() * 2); // Slow battery drain
+            
+            await storage.createBiometricData({
+              participantId: participant.id,
+              heartRate: Math.round(heartRate),
+              hrv: Math.round(hrv),
+              stressLevel: Math.min(100, Math.round((heartRate - 60) * 1.5)), // Stress scale 1-100
+              oxygenSaturation: Math.round(oxygenSaturation),
+              skinTemperature: Math.round(skinTemperature),
+              stepCount,
+              caloriesBurned,
+              batteryLevel: Math.round(batteryLevel),
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in biometric simulation:", error);
+    }
+  }, 3000); // Update every 3 seconds
 }
