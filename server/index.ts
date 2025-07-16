@@ -9,6 +9,8 @@ app.use(express.urlencoded({ extended: false }));
 // Serve attached assets
 app.use("/attached_assets", express.static("attached_assets"));
 
+
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -41,6 +43,19 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Serve Unity build files before Vite middleware
+  app.use("/unity-build", express.static("public/unity-build", {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (path.endsWith('.wasm')) {
+        res.setHeader('Content-Type', 'application/wasm');
+      } else if (path.endsWith('.data')) {
+        res.setHeader('Content-Type', 'application/octet-stream');
+      }
+    }
+  }));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

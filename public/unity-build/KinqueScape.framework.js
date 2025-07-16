@@ -1,21 +1,10 @@
-// Unity Framework - Development Placeholder
-// This provides basic Unity WebGL framework compatibility
+// Unity Framework - Development Implementation
+// Compatible with react-unity-webgl
 
 (function() {
   console.log('Unity Framework loaded (development mode)');
   
-  // Mock Unity framework functions
-  window.unityFramework = {
-    instantiate: function(config) {
-      return Promise.resolve({
-        SendMessage: function(gameObject, method, parameter) {
-          console.log('Unity Framework SendMessage:', gameObject, method, parameter);
-        }
-      });
-    }
-  };
-  
-  // Unity module system mock
+  // Unity module system
   if (!window.Module) {
     window.Module = {
       canvas: null,
@@ -24,7 +13,23 @@
       },
       printErr: function(text) {
         console.error('Unity:', text);
+      },
+      onRuntimeInitialized: function() {
+        console.log('Unity runtime initialized');
       }
     };
   }
+  
+  // Mock WASM loading
+  window.WebAssembly = window.WebAssembly || {
+    instantiate: function() {
+      return Promise.resolve({
+        instance: {
+          exports: {}
+        }
+      });
+    }
+  };
+  
+  console.log('Unity Framework ready');
 })();

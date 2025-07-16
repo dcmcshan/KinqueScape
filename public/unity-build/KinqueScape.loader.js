@@ -1,5 +1,5 @@
-// Unity WebGL Loader - Minimal Implementation for Development
-// This is a development placeholder until actual Unity build is ready
+// Unity WebGL Loader - Development Implementation
+// Compatible with react-unity-webgl
 
 (function() {
   var unityInstance = null;
@@ -7,6 +7,8 @@
   // Unity WebGL API compatibility
   window.createUnityInstance = function(canvas, config, onProgress) {
     return new Promise((resolve, reject) => {
+      console.log('Unity WebGL: Creating instance with config:', config);
+      
       // Simulate loading progress
       var progress = 0;
       var interval = setInterval(() => {
@@ -21,16 +23,33 @@
             SendMessage: function(gameObjectName, methodName, parameter) {
               console.log('Unity SendMessage:', gameObjectName, methodName, parameter);
               
-              // Simulate Unity responses
-              setTimeout(() => {
-                if (methodName === 'UpdateDevices') {
-                  console.log('Unity: Devices updated');
-                } else if (methodName === 'UpdateParticipants') {
-                  console.log('Unity: Participants updated');
-                } else if (methodName === 'ResetCamera') {
-                  console.log('Unity: Camera reset');
+              // Handle specific Unity messages
+              if (methodName === 'UpdateDevices') {
+                try {
+                  var devices = JSON.parse(parameter);
+                  console.log('Unity: Updated', devices.length, 'devices');
+                  updateDeviceVisuals(canvas, devices);
+                } catch (e) {
+                  console.error('Unity: Error parsing devices:', e);
                 }
-              }, 100);
+              } else if (methodName === 'UpdateParticipants') {
+                try {
+                  var participants = JSON.parse(parameter);
+                  console.log('Unity: Updated', participants.length, 'participants');
+                  updateParticipantVisuals(canvas, participants);
+                } catch (e) {
+                  console.error('Unity: Error parsing participants:', e);
+                }
+              } else if (methodName === 'ResetCamera') {
+                console.log('Unity: Camera reset');
+                redrawScene(canvas);
+              } else if (methodName === 'ZoomIn') {
+                console.log('Unity: Zooming in');
+                redrawScene(canvas);
+              } else if (methodName === 'ZoomOut') {
+                console.log('Unity: Zooming out');
+                redrawScene(canvas);
+              }
             },
             
             Module: {
@@ -38,12 +57,15 @@
             }
           };
           
-          // Draw basic 3D scene on canvas
-          drawBasicScene(canvas);
+          // Initialize the scene
+          initializeScene(canvas);
+          
+          // Set up click handlers
+          setupClickHandlers(canvas);
           
           // Notify React that Unity is ready
           setTimeout(() => {
-            if (window.ReactUnityWebGL) {
+            if (window.ReactUnityWebGL && window.ReactUnityWebGL.dispatchEvent) {
               window.ReactUnityWebGL.dispatchEvent('ReactMessage', JSON.stringify({
                 type: 'unity_ready'
               }));
@@ -56,11 +78,18 @@
     });
   };
   
-  function drawBasicScene(canvas) {
+  var currentDevices = [];
+  var currentParticipants = [];
+  
+  function initializeScene(canvas) {
+    redrawScene(canvas);
+  }
+  
+  function redrawScene(canvas) {
     var ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set up canvas
+    // Clear canvas
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -85,40 +114,158 @@
     
     // Draw title
     ctx.fillStyle = '#ff0040';
-    ctx.font = '24px Arial';
+    ctx.font = '20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Unity WebGL Dungeon Environment', canvas.width / 2, 50);
+    ctx.fillText('Unity WebGL Dungeon Environment', canvas.width / 2, 30);
     
-    ctx.fillStyle = '#fff';
-    ctx.font = '14px Arial';
-    ctx.fillText('Waiting for Unity build files...', canvas.width / 2, 80);
-    ctx.fillText('Place Unity build files in /public/unity-build/', canvas.width / 2, 100);
+    // Draw devices
+    currentDevices.forEach(function(device) {
+      drawDevice(ctx, device, canvas.width, canvas.height);
+    });
     
-    // Draw some basic shapes as placeholder
-    ctx.fillStyle = '#00ff00';
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.3, canvas.height * 0.4, 8, 0, 2 * Math.PI);
-    ctx.fill();
+    // Draw participants
+    currentParticipants.forEach(function(participant) {
+      drawParticipant(ctx, participant, canvas.width, canvas.height);
+    });
     
-    ctx.fillStyle = '#0099ff';
-    ctx.fillRect(canvas.width * 0.6 - 5, canvas.height * 0.6 - 10, 10, 20);
-    
-    ctx.fillStyle = '#ff6600';
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.5, canvas.height * 0.3, 6, 0, 2 * Math.PI);
-    ctx.fill();
+    // Draw legend
+    drawLegend(ctx, canvas.width, canvas.height);
   }
   
-  // Mock Unity build configuration
-  window.unityBuildConfig = {
-    dataUrl: '/unity-build/KinqueScape.data',
-    frameworkUrl: '/unity-build/KinqueScape.framework.js',
-    codeUrl: '/unity-build/KinqueScape.wasm',
-    streamingAssetsUrl: 'StreamingAssets',
-    companyName: 'KinqueScape',
-    productName: 'Dungeon Demo',
-    productVersion: '1.0.0',
-  };
+  function updateDeviceVisuals(canvas, devices) {
+    currentDevices = devices;
+    redrawScene(canvas);
+  }
+  
+  function updateParticipantVisuals(canvas, participants) {
+    currentParticipants = participants;
+    redrawScene(canvas);
+  }
+  
+  function drawDevice(ctx, device, canvasWidth, canvasHeight) {
+    var x = (device.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
+    var y = (device.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    
+    // Draw device circle
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.fillStyle = device.status === 'online' ? '#00ff00' : '#ff0000';
+    ctx.fill();
+    
+    // Draw device border
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw device name
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(device.name, x, y + 20);
+  }
+  
+  function drawParticipant(ctx, participant, canvasWidth, canvasHeight) {
+    var x = (participant.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
+    var y = (participant.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    
+    // Draw participant as human figure
+    ctx.fillStyle = '#0099ff';
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(x, y - 15, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Body
+    ctx.fillRect(x - 3, y - 10, 6, 15);
+    
+    // Arms
+    ctx.fillRect(x - 8, y - 5, 5, 2);
+    ctx.fillRect(x + 3, y - 5, 5, 2);
+    
+    // Legs
+    ctx.fillRect(x - 2, y + 5, 2, 10);
+    ctx.fillRect(x, y + 5, 2, 10);
+    
+    // Draw participant name
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(participant.name, x, y + 25);
+  }
+  
+  function drawLegend(ctx, canvasWidth, canvasHeight) {
+    var legendY = canvasHeight - 40;
+    
+    // Online devices
+    ctx.fillStyle = '#00ff00';
+    ctx.beginPath();
+    ctx.arc(20, legendY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Online Device', 30, legendY + 4);
+    
+    // Offline devices
+    ctx.fillStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.arc(130, legendY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Offline Device', 140, legendY + 4);
+    
+    // Participants
+    ctx.fillStyle = '#0099ff';
+    ctx.fillRect(250, legendY - 5, 10, 10);
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Participant', 265, legendY + 4);
+  }
+  
+  function setupClickHandlers(canvas) {
+    canvas.addEventListener('click', function(event) {
+      var rect = canvas.getBoundingClientRect();
+      var x = event.clientX - rect.left;
+      var y = event.clientY - rect.top;
+      
+      // Check device clicks
+      currentDevices.forEach(function(device) {
+        var deviceX = (device.position.x / 10) * canvas.width * 0.8 + canvas.width * 0.1;
+        var deviceY = (device.position.z / 10) * canvas.height * 0.8 + canvas.height * 0.1;
+        
+        var distance = Math.sqrt(Math.pow(x - deviceX, 2) + Math.pow(y - deviceY, 2));
+        if (distance < 15) {
+          console.log('Device clicked:', device.id);
+          if (window.ReactUnityWebGL && window.ReactUnityWebGL.dispatchEvent) {
+            window.ReactUnityWebGL.dispatchEvent('ReactMessage', JSON.stringify({
+              type: 'device_click',
+              deviceId: device.id
+            }));
+          }
+        }
+      });
+      
+      // Check participant clicks
+      currentParticipants.forEach(function(participant) {
+        var participantX = (participant.position.x / 10) * canvas.width * 0.8 + canvas.width * 0.1;
+        var participantY = (participant.position.z / 10) * canvas.height * 0.8 + canvas.height * 0.1;
+        
+        var distance = Math.sqrt(Math.pow(x - participantX, 2) + Math.pow(y - participantY, 2));
+        if (distance < 20) {
+          console.log('Participant clicked:', participant.id);
+          if (window.ReactUnityWebGL && window.ReactUnityWebGL.dispatchEvent) {
+            window.ReactUnityWebGL.dispatchEvent('ReactMessage', JSON.stringify({
+              type: 'participant_click',
+              participantId: participant.id
+            }));
+          }
+        }
+      });
+    });
+  }
   
   console.log('Unity WebGL Loader initialized (development mode)');
 })();
