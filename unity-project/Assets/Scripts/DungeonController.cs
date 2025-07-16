@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class DungeonController : MonoBehaviour
 {
@@ -247,22 +248,39 @@ public class DungeonController : MonoBehaviour
         {
             DeviceData[] deviceArray = JsonHelper.FromJson<DeviceData>(devicesJson);
             
-            // Clear existing devices
-            foreach (var device in devices.Values)
-            {
-                if (device != null)
-                {
-                    Destroy(device);
-                }
-            }
-            devices.Clear();
-
-            // Create new devices with proper 3D representation
+            // Update existing devices instead of destroying them
+            HashSet<int> currentDeviceIds = new HashSet<int>();
+            
             foreach (var deviceData in deviceArray)
             {
-                GameObject device = Create3DDevice(deviceData);
-                devices[deviceData.id] = device;
+                currentDeviceIds.Add(deviceData.id);
+                
+                if (devices.ContainsKey(deviceData.id))
+                {
+                    // Update existing device
+                    UpdateExistingDevice(devices[deviceData.id], deviceData);
+                }
+                else
+                {
+                    // Create new device
+                    GameObject device = Create3DDevice(deviceData);
+                    devices[deviceData.id] = device;
+                    Debug.Log($"Unity: Created persistent 3D device: {deviceData.name}");
+                }
             }
+            
+            // Remove devices that no longer exist
+            var devicesToRemove = devices.Keys.Where(id => !currentDeviceIds.Contains(id)).ToList();
+            foreach (var deviceId in devicesToRemove)
+            {
+                if (devices[deviceId] != null)
+                {
+                    Destroy(devices[deviceId]);
+                }
+                devices.Remove(deviceId);
+            }
+            
+            Debug.Log($"Unity: Updated {deviceArray.Length} devices in 3D scene");
         }
         catch (Exception e)
         {
@@ -464,6 +482,43 @@ public class DungeonController : MonoBehaviour
         
         Debug.Log($"Unity: Created 3D {deviceData.type} device: {deviceData.name}");
         return device;
+    }
+    
+    void UpdateExistingDevice(GameObject device, DeviceData deviceData)
+    {
+        if (device == null) return;
+        
+        // Update position
+        device.transform.position = new Vector3(deviceData.position.x, deviceData.position.y + 0.5f, deviceData.position.z);
+        
+        // Update material based on status
+        Renderer renderer = device.GetComponent<Renderer>();
+        if (renderer != null && renderer.material != null)
+        {
+            Material material = renderer.material;
+            
+            switch (deviceData.type)
+            {
+                case "light":
+                    material.color = deviceData.status == "online" ? new Color(1f, 1f, 0.4f, 1f) : Color.gray;
+                    if (deviceData.status == "online")
+                    {
+                        material.SetColor("_EmissionColor", new Color(1f, 0.6f, 0f, 1f));
+                        material.EnableKeyword("_EMISSION");
+                    }
+                    else
+                    {
+                        material.DisableKeyword("_EMISSION");
+                    }
+                    break;
+                case "lock":
+                    material.color = deviceData.status == "online" ? Color.red : Color.gray;
+                    break;
+                default:
+                    material.color = deviceData.status == "online" ? Color.green : Color.red;
+                    break;
+            }
+        }
     }
 
     public void ResetCamera()

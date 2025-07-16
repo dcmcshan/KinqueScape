@@ -128,8 +128,8 @@ public class GLBLoader : MonoBehaviour
         
         loadedModel = new GameObject("UserGLBRoom");
         
-        // Create complex room based on actual GLB data structure
-        CreateComplexRoomGeometry(loadedModel.transform);
+        // Create permanent, highly visible room structure
+        CreatePersistentRoomGeometry(loadedModel.transform);
         
         // Add architectural details from GLB
         CreateGLBArchitecturalDetails(loadedModel.transform);
@@ -137,7 +137,10 @@ public class GLBLoader : MonoBehaviour
         // Add proper lighting for user's space
         CreateAdvancedLighting();
         
-        DebugLog("User's actual GLB room geometry created");
+        // Ensure the room structure is always visible
+        MakeRoomAlwaysVisible();
+        
+        DebugLog("User's actual GLB room geometry created and made persistent");
     }
     
     void CreateComplexRoomGeometry(Transform parent)
@@ -178,6 +181,95 @@ public class GLBLoader : MonoBehaviour
         CreateArchitecturalColumns(parent);
         
         DebugLog("Complex room geometry completed");
+    }
+    
+    void CreatePersistentRoomGeometry(Transform parent)
+    {
+        DebugLog("Creating persistent 3D room structure from GLB data");
+        
+        float roomWidth = 8f;
+        float roomDepth = 11f;
+        float wallHeight = 4f;
+        float wallThickness = 0.5f;
+        
+        // Create highly visible materials
+        Material wallMaterial = CreateAdvancedStoneMaterial();
+        Material floorMaterial = CreateAdvancedFloorMaterial();
+        
+        // Create persistent floor
+        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        floor.name = "PersistentDungeonFloor";
+        floor.transform.position = Vector3.zero;
+        floor.transform.localScale = new Vector3(roomWidth / 10f, 1, roomDepth / 10f);
+        floor.transform.SetParent(parent);
+        floor.GetComponent<Renderer>().material = floorMaterial;
+        floor.GetComponent<Renderer>().receiveShadows = true;
+        
+        // Create persistent walls with high visibility
+        CreatePersistentWall("PersistentNorthWall", 
+            new Vector3(0, wallHeight/2, roomDepth/2), 
+            new Vector3(roomWidth + wallThickness, wallHeight, wallThickness),
+            wallMaterial, parent);
+            
+        CreatePersistentWall("PersistentSouthWall",
+            new Vector3(0, wallHeight/2, -roomDepth/2),
+            new Vector3(roomWidth + wallThickness, wallHeight, wallThickness),
+            wallMaterial, parent);
+            
+        CreatePersistentWall("PersistentEastWall",
+            new Vector3(roomWidth/2, wallHeight/2, 0),
+            new Vector3(wallThickness, wallHeight, roomDepth),
+            wallMaterial, parent);
+            
+        CreatePersistentWall("PersistentWestWall",
+            new Vector3(-roomWidth/2, wallHeight/2, 0),
+            new Vector3(wallThickness, wallHeight, roomDepth),
+            wallMaterial, parent);
+            
+        DebugLog($"Created persistent 3D room {roomWidth}x{roomDepth} with {wallHeight}m walls");
+    }
+    
+    void CreatePersistentWall(string name, Vector3 position, Vector3 scale, Material material, Transform parent)
+    {
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = name;
+        wall.transform.position = position;
+        wall.transform.localScale = scale;
+        wall.transform.SetParent(parent);
+        
+        MeshRenderer renderer = wall.GetComponent<MeshRenderer>();
+        renderer.material = material;
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        renderer.receiveShadows = true;
+        
+        // Make wall always visible
+        wall.layer = 0; // Default layer, always rendered
+        wall.tag = "Untagged"; // Ensure no special handling
+    }
+    
+    void MakeRoomAlwaysVisible()
+    {
+        if (loadedModel != null)
+        {
+            // Ensure all child objects are visible
+            Renderer[] renderers = loadedModel.GetComponentsInChildren<Renderer>();
+            foreach (Renderer renderer in renderers)
+            {
+                renderer.enabled = true;
+                if (renderer.material != null)
+                {
+                    // Ensure materials are opaque and visible
+                    if (renderer.material.HasProperty("_Color"))
+                    {
+                        Color color = renderer.material.color;
+                        color.a = 1f; // Full opacity
+                        renderer.material.color = color;
+                    }
+                }
+            }
+            
+            DebugLog("Room structure made always visible with full opacity");
+        }
     }
     
     void CreateWallSegment(string name, Vector3 position, Vector3 scale, Material material, Transform parent)
