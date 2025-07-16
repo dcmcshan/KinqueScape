@@ -566,6 +566,26 @@ public class DungeonController : MonoBehaviour
         Debug.Log("Unity: GLB Loader component added for 3D mesh rendering");
     }
     
+    public void LoadProcessedMesh(string meshDataJson)
+    {
+        DebugLog($"Received processed mesh data from server");
+        try
+        {
+            // Parse the mesh data JSON
+            var meshData = JsonUtility.FromJson<ProcessedMeshData>(meshDataJson);
+            DebugLog($"Creating room from {meshData.meshes.Length} processed meshes");
+            
+            // Create room from actual mesh data
+            CreateRoomFromMeshData(meshData);
+        }
+        catch (System.Exception e)
+        {
+            DebugLog($"Error processing mesh data: {e.Message}");
+            // Fallback to GLB loading
+            InitializeGLBLoader();
+        }
+    }
+    
     public void GLBLoadSuccess(string message)
     {
         Debug.Log($"Unity: GLB model loaded successfully: {message}");
@@ -579,6 +599,127 @@ public class DungeonController : MonoBehaviour
         }
         
         SendMessageToReact("{\"type\":\"glb_loaded\",\"message\":\"" + message + "\"}");
+    }
+    
+    void CreateRoomFromMeshData(ProcessedMeshData meshData)
+    {
+        DebugLog("Creating room from actual processed mesh vertices");
+        
+        // Clear any existing room
+        GameObject existingRoom = GameObject.Find("ProcessedMeshRoom");
+        if (existingRoom != null)
+        {
+            DestroyImmediate(existingRoom);
+        }
+        
+        // Create parent object
+        GameObject roomParent = new GameObject("ProcessedMeshRoom");
+        
+        // Create mesh objects from the processed data
+        for (int i = 0; i < meshData.meshes.Length; i++)
+        {
+            var meshInfo = meshData.meshes[i];
+            
+            if (meshInfo.vertices.Length > 0)
+            {
+                GameObject meshObject = new GameObject($"Mesh_{i}_{meshInfo.name}");
+                meshObject.transform.SetParent(roomParent.transform);
+                
+                // Create actual mesh from vertex data
+                Mesh mesh = new Mesh();
+                
+                // Convert flat arrays to Vector3 arrays
+                Vector3[] vertices = new Vector3[meshInfo.vertices.Length / 3];
+                for (int v = 0; v < vertices.Length; v++)
+                {
+                    vertices[v] = new Vector3(
+                        meshInfo.vertices[v * 3],
+                        meshInfo.vertices[v * 3 + 1], 
+                        meshInfo.vertices[v * 3 + 2]
+                    );
+                }
+                
+                Vector3[] normals = null;
+                if (meshInfo.normals.Length > 0)
+                {
+                    normals = new Vector3[meshInfo.normals.Length / 3];
+                    for (int n = 0; n < normals.Length; n++)
+                    {
+                        normals[n] = new Vector3(
+                            meshInfo.normals[n * 3],
+                            meshInfo.normals[n * 3 + 1],
+                            meshInfo.normals[n * 3 + 2]
+                        );
+                    }
+                }
+                
+                Vector2[] uvs = null;
+                if (meshInfo.uvs.Length > 0)
+                {
+                    uvs = new Vector2[meshInfo.uvs.Length / 2];
+                    for (int u = 0; u < uvs.Length; u++)
+                    {
+                        uvs[u] = new Vector2(
+                            meshInfo.uvs[u * 2],
+                            meshInfo.uvs[u * 2 + 1]
+                        );
+                    }
+                }
+                
+                // Set mesh data
+                mesh.vertices = vertices;
+                if (meshInfo.indices.Length > 0)
+                {
+                    mesh.triangles = meshInfo.indices;
+                }
+                if (normals != null)
+                {
+                    mesh.normals = normals;
+                }
+                else
+                {
+                    mesh.RecalculateNormals();
+                }
+                if (uvs != null)
+                {
+                    mesh.uv = uvs;
+                }
+                
+                mesh.RecalculateBounds();
+                
+                // Add mesh components
+                MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
+                meshFilter.mesh = mesh;
+                
+                MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
+                meshRenderer.material = CreateStoneMaterial(new Color(0.6f, 0.6f, 0.6f, 1f));
+                
+                DebugLog($"Created mesh {i}: {vertices.Length} vertices, {meshInfo.indices.Length/3} triangles");
+            }
+        }
+        
+        DebugLog($"Room created from {meshData.meshes.Length} actual meshes");
+        
+        // Position camera to view the room
+        if (mainCamera != null)
+        {
+            Vector3 boundingCenter = new Vector3(
+                (meshData.boundingBox.max.x + meshData.boundingBox.min.x) / 2,
+                (meshData.boundingBox.max.y + meshData.boundingBox.min.y) / 2,
+                (meshData.boundingBox.max.z + meshData.boundingBox.min.z) / 2
+            );
+            
+            float boundingSize = Mathf.Max(
+                meshData.boundingBox.max.x - meshData.boundingBox.min.x,
+                meshData.boundingBox.max.y - meshData.boundingBox.min.y,
+                meshData.boundingBox.max.z - meshData.boundingBox.min.z
+            );
+            
+            mainCamera.transform.position = boundingCenter + new Vector3(0, boundingSize, boundingSize);
+            mainCamera.transform.LookAt(boundingCenter);
+            
+            DebugLog($"Camera positioned to view actual mesh room");
+        }
     }
 }
 
@@ -609,6 +750,48 @@ public class Position
     public float x;
     public float y;
     public float z;
+}
+
+[System.Serializable]
+public class ProcessedMeshData
+{
+    public MeshInfo[] meshes;
+    public BoundingBox boundingBox;
+    public MaterialInfo[] materials;
+}
+
+[System.Serializable]
+public class MeshInfo
+{
+    public float[] vertices;
+    public int[] indices;
+    public float[] normals;
+    public float[] uvs;
+    public string name;
+}
+
+[System.Serializable]
+public class BoundingBox
+{
+    public Vector3Data min;
+    public Vector3Data max;
+}
+
+[System.Serializable]
+public class Vector3Data
+{
+    public float x;
+    public float y;
+    public float z;
+}
+
+[System.Serializable]
+public class MaterialInfo
+{
+    public string name;
+    public float[] baseColor;
+    public float metallic;
+    public float roughness;
 }
 
 // Helper class for JSON array parsing

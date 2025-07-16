@@ -5,6 +5,7 @@ import { insertEscapeRoomDesignSchema, insertBusinessPlanSchema, loginSchema, re
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import { Request, Response, NextFunction } from "express";
+import path from "path";
 
 // Extend session type
 declare module "express-session" {
@@ -693,6 +694,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching scapes:", error);
       res.status(500).json({ error: "Failed to fetch scapes" });
+    }
+  });
+
+  // GLB mesh data endpoint for Unity
+  app.get("/api/glb-mesh", async (req, res) => {
+    try {
+      const { GLBProcessor } = await import('./glb-processor');
+      const processor = new GLBProcessor();
+      
+      const glbPath = path.join(process.cwd(), 'public', 'unity-build', '7_16_2025.glb');
+      console.log(`Processing GLB file at: ${glbPath}`);
+      
+      const meshData = await processor.processGLBFile(glbPath);
+      
+      console.log(`Sending mesh data: ${meshData.meshes.length} meshes`);
+      res.json(meshData);
+    } catch (error) {
+      console.error("Error processing GLB file:", error);
+      res.status(500).json({ error: "Failed to process GLB file", details: error.message });
     }
   });
 

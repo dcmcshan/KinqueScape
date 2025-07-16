@@ -161,34 +161,30 @@ export default function RealUnityWebGL({
                   console.log('Unity WebGL: Direct GLB file loading trigger');
                   window.unityInstance.loadGLBFile('/unity-build/7_16_2025.glb');
                 } else {
-                  // Manual GLB loading trigger  
-                  console.log('Unity WebGL: Manual GLB loading trigger');
-                  fetch('/unity-build/7_16_2025.glb')
+                  // Load processed mesh data from server
+                  console.log('Unity WebGL: Fetching processed mesh data from server');
+                  fetch('/api/glb-mesh')
                     .then(response => {
-                      console.log('Unity WebGL: GLB response status:', response.status);
-                      if (!response.ok) throw new Error('GLB fetch failed');
-                      return response.arrayBuffer();
+                      console.log('Unity WebGL: Mesh API response status:', response.status);
+                      return response.json();
                     })
-                    .then(buffer => {
-                      console.log('Unity WebGL: Manual GLB loaded (' + buffer.byteLength + ' bytes)');
-                      console.log('Unity WebGL: Processing actual 3D mesh geometry from GLB file');
+                    .then(meshData => {
+                      console.log('Unity WebGL: Received mesh data:', meshData.meshes.length, 'meshes');
+                      console.log('Unity WebGL: Bounding box:', meshData.boundingBox);
+                      console.log('Unity WebGL: Creating actual 3D room from processed mesh vertices');
                       
-                      // Parse GLB header to verify it's valid
-                      const dataView = new DataView(buffer);
-                      const magic = dataView.getUint32(0, true);
-                      if (magic === 0x46546C67) { // "glTF" magic
-                        console.log('Unity WebGL: Valid GLB file confirmed! Creating 3D room from mesh data');
-                        
-                        // Send success message to Unity
-                        if (window.unityInstance && window.unityInstance.SendMessage) {
-                          window.unityInstance.SendMessage('DungeonController', 'GLBLoadSuccess', 'User model loaded');
-                        }
-                      } else {
-                        console.log('Unity WebGL: Invalid GLB format detected');
+                      // Send processed mesh data to Unity
+                      if (window.unityInstance && window.unityInstance.SendMessage) {
+                        window.unityInstance.SendMessage('DungeonController', 'LoadProcessedMesh', JSON.stringify(meshData));
                       }
                     })
                     .catch(error => {
-                      console.error('Unity WebGL: Manual GLB loading failed:', error);
+                      console.error('Unity WebGL: Mesh data loading failed:', error);
+                      // Fallback to GLB file loading
+                      console.log('Unity WebGL: Falling back to GLB file loading');
+                      if (window.unityInstance && window.unityInstance.SendMessage) {
+                        window.unityInstance.SendMessage('DungeonController', 'LoadGLBModel', '/unity-build/7_16_2025.glb');
+                      }
                     });
                 }
               }, 2000);
