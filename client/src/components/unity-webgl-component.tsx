@@ -59,6 +59,10 @@ export default function UnityWebGLComponent({
           
           console.log('Unity WebGL: Creating instance with config:', config);
           
+          // Set canvas dimensions before Unity initialization
+          canvas.width = 800;
+          canvas.height = 384;
+          
           const instance = await window.createUnityInstance(canvas, config, (progress: number) => {
             setLoadingProgression(progress);
             console.log(`Unity WebGL: Loading progress: ${Math.round(progress * 100)}%`);
@@ -244,9 +248,9 @@ export default function UnityWebGLComponent({
       <CardContent>
         <div className="relative">
           {/* Unity WebGL Canvas */}
-          <div className="w-full h-96 bg-black rounded-lg relative overflow-hidden">
+          <div className="w-full h-96 bg-gray-900 rounded-lg relative overflow-hidden border border-accent/20">
             {!isLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
                 <div className="text-center">
                   <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                   <p className="text-accent text-sm">Loading Unity Environment...</p>
@@ -257,12 +261,23 @@ export default function UnityWebGLComponent({
               </div>
             )}
 
+            {error && (
+              <div className="absolute inset-0 flex items-center justify-center bg-red-900/20 z-10">
+                <div className="text-center">
+                  <p className="text-red-400 text-sm">Unity Error: {error}</p>
+                </div>
+              </div>
+            )}
+
             <canvas
               ref={canvasRef}
+              width={800}
+              height={384}
               style={{
                 width: '100%',
                 height: '100%',
                 display: 'block',
+                background: '#1a1a1a',
               }}
               className="rounded-lg"
             />
