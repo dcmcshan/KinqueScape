@@ -52,6 +52,9 @@ public class DungeonController : MonoBehaviour
         // Add proper dungeon lighting
         CreateDungeonLighting();
         
+        // Initialize GLB loader for actual 3D mesh
+        InitializeGLBLoader();
+        
         Debug.Log("Unity: 3D Dungeon environment setup complete");
     }
     
@@ -62,43 +65,77 @@ public class DungeonController : MonoBehaviour
         float wallHeight = 4f;
         float wallThickness = 0.5f;
         
-        // Create stone floor
+        // Create parent object for room
+        GameObject roomParent = new GameObject("StaticDungeonRoom");
+        roomParent.transform.position = Vector3.zero;
+        
+        // Create highly visible stone floor
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        floor.name = "DungeonFloor";
+        floor.name = "StaticDungeonFloor";
         floor.transform.position = Vector3.zero;
         floor.transform.localScale = new Vector3(roomWidth / 10f, 1, roomDepth / 10f);
-        Material floorMaterial = CreateStoneMaterial(new Color(0.3f, 0.3f, 0.3f, 1f));
+        floor.transform.SetParent(roomParent.transform);
+        Material floorMaterial = CreateStoneMaterial(new Color(0.2f, 0.2f, 0.2f, 1f));
         floor.GetComponent<Renderer>().material = floorMaterial;
         floor.GetComponent<Renderer>().receiveShadows = true;
         
-        // Create stone walls
-        Material wallMaterial = CreateStoneMaterial(new Color(0.4f, 0.4f, 0.4f, 1f));
+        // Create highly visible stone walls
+        Material wallMaterial = CreateStoneMaterial(new Color(0.5f, 0.5f, 0.5f, 1f));
         
-        // North Wall
-        CreateWall("NorthWall", 
+        // North Wall - Make it huge and obvious
+        CreateStaticWall("StaticNorthWall", 
             new Vector3(0, wallHeight/2, roomDepth/2), 
             new Vector3(roomWidth + wallThickness, wallHeight, wallThickness),
-            wallMaterial);
+            wallMaterial, roomParent.transform);
             
         // South Wall  
-        CreateWall("SouthWall",
+        CreateStaticWall("StaticSouthWall",
             new Vector3(0, wallHeight/2, -roomDepth/2),
             new Vector3(roomWidth + wallThickness, wallHeight, wallThickness),
-            wallMaterial);
+            wallMaterial, roomParent.transform);
             
         // East Wall
-        CreateWall("EastWall",
+        CreateStaticWall("StaticEastWall",
             new Vector3(roomWidth/2, wallHeight/2, 0),
             new Vector3(wallThickness, wallHeight, roomDepth),
-            wallMaterial);
+            wallMaterial, roomParent.transform);
             
         // West Wall
-        CreateWall("WestWall",
+        CreateStaticWall("StaticWestWall",
             new Vector3(-roomWidth/2, wallHeight/2, 0),
             new Vector3(wallThickness, wallHeight, roomDepth),
-            wallMaterial);
+            wallMaterial, roomParent.transform);
             
-        Debug.Log($"Unity: Created 3D room {roomWidth}x{roomDepth} with {wallHeight}m walls");
+        // Add ceiling for proper 3D effect
+        GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        ceiling.name = "StaticCeiling";
+        ceiling.transform.position = new Vector3(0, wallHeight, 0);
+        ceiling.transform.localScale = new Vector3(roomWidth / 10f, 1, roomDepth / 10f);
+        ceiling.transform.rotation = Quaternion.Euler(180, 0, 0);
+        ceiling.transform.SetParent(roomParent.transform);
+        ceiling.GetComponent<Renderer>().material = wallMaterial;
+        
+        Debug.Log($"Unity: Created static 3D room {roomWidth}x{roomDepth} with {wallHeight}m walls");
+    }
+    
+    void CreateStaticWall(string name, Vector3 position, Vector3 scale, Material material, Transform parent)
+    {
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = name;
+        wall.transform.position = position;
+        wall.transform.localScale = scale;
+        wall.transform.SetParent(parent);
+        
+        MeshRenderer renderer = wall.GetComponent<MeshRenderer>();
+        renderer.material = material;
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        renderer.receiveShadows = true;
+        
+        // Ensure wall is always visible
+        wall.layer = 0;
+        wall.tag = "Untagged";
+        
+        Debug.Log($"Unity: Created static wall {name} at {position}");
     }
     
     Material CreateStoneMaterial(Color baseColor)
@@ -248,43 +285,22 @@ public class DungeonController : MonoBehaviour
         {
             DeviceData[] deviceArray = JsonHelper.FromJson<DeviceData>(devicesJson);
             
-            // Update existing devices instead of destroying them
-            HashSet<int> currentDeviceIds = new HashSet<int>();
-            
-            foreach (var deviceData in deviceArray)
+            // Only create devices once, don't update constantly
+            if (devices.Count == 0)
             {
-                currentDeviceIds.Add(deviceData.id);
-                
-                if (devices.ContainsKey(deviceData.id))
+                foreach (var deviceData in deviceArray)
                 {
-                    // Update existing device
-                    UpdateExistingDevice(devices[deviceData.id], deviceData);
-                }
-                else
-                {
-                    // Create new device
-                    GameObject device = Create3DDevice(deviceData);
+                    GameObject device = CreateStatic3DDevice(deviceData);
                     devices[deviceData.id] = device;
-                    Debug.Log($"Unity: Created persistent 3D device: {deviceData.name}");
+                    Debug.Log($"Unity: Created static 3D device: {deviceData.name}");
                 }
+                
+                Debug.Log($"Unity: Created {deviceArray.Length} static devices in 3D scene");
             }
-            
-            // Remove devices that no longer exist
-            var devicesToRemove = devices.Keys.Where(id => !currentDeviceIds.Contains(id)).ToList();
-            foreach (var deviceId in devicesToRemove)
-            {
-                if (devices[deviceId] != null)
-                {
-                    Destroy(devices[deviceId]);
-                }
-                devices.Remove(deviceId);
-            }
-            
-            Debug.Log($"Unity: Updated {deviceArray.Length} devices in 3D scene");
         }
         catch (Exception e)
         {
-            Debug.LogError("Error updating devices: " + e.Message);
+            Debug.LogError("Error creating static devices: " + e.Message);
         }
     }
 
@@ -395,7 +411,7 @@ public class DungeonController : MonoBehaviour
         SendMessageToReact(message);
     }
 
-    GameObject Create3DDevice(DeviceData deviceData)
+    GameObject CreateStatic3DDevice(DeviceData deviceData)
     {
         GameObject device;
         Material material;
@@ -545,6 +561,27 @@ public class DungeonController : MonoBehaviour
         {
             mainCamera.transform.position = mainCamera.transform.position * 1.2f;
         }
+    }
+    
+    void InitializeGLBLoader()
+    {
+        GLBLoader glbLoader = gameObject.AddComponent<GLBLoader>();
+        Debug.Log("Unity: GLB Loader component added for 3D mesh rendering");
+    }
+    
+    public void GLBLoadSuccess(string message)
+    {
+        Debug.Log($"Unity: GLB model loaded successfully: {message}");
+        
+        // Force camera to focus on the loaded 3D model
+        if (mainCamera != null)
+        {
+            mainCamera.transform.position = new Vector3(0, 8, 10);
+            mainCamera.transform.LookAt(Vector3.zero);
+            mainCamera.fieldOfView = 60f;
+        }
+        
+        SendMessageToReact("{\"type\":\"glb_loaded\",\"message\":\"" + message + "\"}");
     }
 }
 
