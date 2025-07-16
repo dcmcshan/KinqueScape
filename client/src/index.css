@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(249, 90%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(187, 95%, 42%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(43, 96%, 49%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(249, 90%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(187, 95%, 42%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(43, 96%, 49%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Navigation Styles */
+.nav-item {
+  @apply flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors;
+}
+
+.nav-item.active {
+  @apply bg-primary text-white hover:bg-primary hover:text-white;
+}
+
+.project-item {
+  @apply flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors;
+}
+
+/* Tab Styles */
+.tab-button {
+  @apply flex items-center py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors;
+}
+
+.tab-button.active {
+  @apply border-primary text-primary;
+}
+
+/* Tool Styles */
+.tool-item {
+  @apply flex flex-col items-center justify-center p-3 border border-gray-200 rounded-lg hover:border-primary hover:bg-gray-50 transition-colors text-center cursor-pointer;
+}
+
+.tool-item i {
+  @apply text-lg text-gray-600 mb-1;
+}
+
+.tool-item span {
+  @apply text-xs text-gray-700 font-medium;
+}
+
+.tool-item.selected {
+  @apply border-primary bg-blue-50;
+}
+
+/* Card Styles */
+.metric-card {
+  @apply bg-white rounded-lg p-6 border border-gray-200 shadow-sm;
+}
+
+/* Atmosphere Options */
+.atmosphere-option {
+  @apply flex flex-col items-center justify-center p-3 border border-gray-200 rounded-lg hover:border-primary hover:bg-gray-50 transition-colors cursor-pointer;
+}
+
+.atmosphere-option.active {
+  @apply border-primary bg-blue-50;
+}
+
+.atmosphere-option i {
+  @apply text-lg mb-1;
+}
+
+.atmosphere-option span {
+  @apply text-xs font-medium;
+}
+
+/* Switch Component */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e0;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: hsl(249, 90%, 60%);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Plan Navigation */
+.plan-nav-item {
+  @apply w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer;
+}
+
+.plan-nav-item.active {
+  @apply bg-blue-50 text-primary;
+}
+
+/* Timeline */
+.timeline-item {
+  @apply relative flex items-start space-x-4;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 24px;
+  height: calc(100% + 24px);
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.timeline-marker {
+  @apply w-4 h-4 rounded-full border-2 border-gray-300 bg-white mt-1 flex-shrink-0;
+}
+
+.timeline-item.completed .timeline-marker {
+  @apply border-green-500 bg-green-500;
+}
+
+.timeline-item.active .timeline-marker {
+  @apply border-blue-500 bg-blue-500;
+}
+
+.timeline-content {
+  @apply flex-1 pb-6;
+}
