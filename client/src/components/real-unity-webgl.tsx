@@ -132,6 +132,8 @@ export default function RealUnityWebGL({
               } else if (data.type === 'participant_click' && onParticipantClick) {
                 const participant = participants.find(p => p.id === data.participantId);
                 if (participant) onParticipantClick(participant);
+              } else if (data.type === 'debug') {
+                console.log('Unity Debug:', data.message);
               }
             } catch (error) {
               console.warn('Unity message parse error:', error);
@@ -142,10 +144,32 @@ export default function RealUnityWebGL({
           setIsLoaded(true);
           setIsInitialized(true);
           
-          // Initialize enhanced 3D scene and load GLB
+          // Initialize enhanced 3D scene and load processed mesh data
           setTimeout(() => {
             try {
-              // Load the actual GLB file in Unity 3D with enhanced settings
+              // First try to load processed mesh data
+              console.log('Unity WebGL: Fetching processed mesh data from server');
+              fetch('/api/glb-mesh')
+                .then(response => {
+                  console.log('Unity WebGL: Mesh API response status:', response.status);
+                  return response.json();
+                })
+                .then(meshData => {
+                  console.log('Unity WebGL: Received mesh data:', meshData.meshes.length, 'meshes');
+                  console.log('Unity WebGL: Bounding box:', meshData.boundingBox);
+                  console.log('Unity WebGL: Creating actual 3D room from processed mesh vertices');
+                  
+                  // Send processed mesh data to Unity
+                  instance.SendMessage('DungeonController', 'LoadProcessedMesh', JSON.stringify(meshData));
+                })
+                .catch(error => {
+                  console.error('Unity WebGL: Mesh data loading failed:', error);
+                  // Fallback to GLB file loading
+                  console.log('Unity WebGL: Falling back to GLB file loading');
+                  instance.SendMessage('DungeonController', 'LoadGLBModel', '/unity-build/7_16_2025.glb');
+                });
+              
+              // Also load the actual GLB file in Unity 3D with enhanced settings
               instance.SendMessage('DungeonController', 'LoadGLBModel', '/unity-build/7_16_2025.glb');
               console.log('Unity WebGL: Loading real GLB model in 3D space');
               

@@ -568,19 +568,45 @@ public class DungeonController : MonoBehaviour
     
     public void LoadProcessedMesh(string meshDataJson)
     {
-        DebugLog($"Received processed mesh data from server");
+        SendMessageToReact("{\"type\":\"debug\",\"message\":\"LoadProcessedMesh called with " + meshDataJson.Length + " chars\"}");
         try
         {
+            // Debug: Show first part of JSON
+            string jsonPreview = meshDataJson.Length > 100 ? meshDataJson.Substring(0, 100) + "..." : meshDataJson;
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"JSON preview: " + jsonPreview + "\"}");
+            
             // Parse the mesh data JSON
             var meshData = JsonUtility.FromJson<ProcessedMeshData>(meshDataJson);
-            DebugLog($"Creating room from {meshData.meshes.Length} processed meshes");
+            
+            if (meshData == null)
+            {
+                SendMessageToReact("{\"type\":\"debug\",\"message\":\"meshData is null after parsing\"}");
+                return;
+            }
+            
+            if (meshData.meshes == null)
+            {
+                SendMessageToReact("{\"type\":\"debug\",\"message\":\"meshes array is null\"}");
+                return;
+            }
+            
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Parsed " + meshData.meshes.Length + " meshes successfully\"}");
+            
+            // Create a bright indicator cube to show processing worked
+            GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            indicator.name = "MeshProcessingIndicator";
+            indicator.transform.position = new Vector3(0, 5, 0);
+            indicator.transform.localScale = Vector3.one * 2f;
+            indicator.GetComponent<Renderer>().material.color = Color.red;
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Created red indicator cube\"}");
             
             // Create room from actual mesh data
             CreateRoomFromMeshData(meshData);
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Room creation completed\"}");
         }
         catch (System.Exception e)
         {
-            DebugLog($"Error processing mesh data: {e.Message}");
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Error: " + e.Message + " Stack: " + e.StackTrace + "\"}");
             // Fallback to GLB loading
             InitializeGLBLoader();
         }
@@ -603,13 +629,20 @@ public class DungeonController : MonoBehaviour
     
     void CreateRoomFromMeshData(ProcessedMeshData meshData)
     {
-        DebugLog("Creating room from actual processed mesh vertices");
+        SendMessageToReact("{\"type\":\"debug\",\"message\":\"Creating room from mesh data\"}");
         
         // Clear any existing room
         GameObject existingRoom = GameObject.Find("ProcessedMeshRoom");
         if (existingRoom != null)
         {
             DestroyImmediate(existingRoom);
+        }
+        
+        // Clear static room too
+        GameObject staticRoom = GameObject.Find("StaticDungeonRoom");
+        if (staticRoom != null)
+        {
+            DestroyImmediate(staticRoom);
         }
         
         // Create parent object
@@ -694,11 +727,11 @@ public class DungeonController : MonoBehaviour
                 MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
                 meshRenderer.material = CreateStoneMaterial(new Color(0.6f, 0.6f, 0.6f, 1f));
                 
-                DebugLog($"Created mesh {i}: {vertices.Length} vertices, {meshInfo.indices.Length/3} triangles");
+                SendMessageToReact("{\"type\":\"debug\",\"message\":\"Created mesh " + i + ": " + vertices.Length + " vertices, " + (meshInfo.indices.Length/3) + " triangles\"}");
             }
         }
         
-        DebugLog($"Room created from {meshData.meshes.Length} actual meshes");
+        SendMessageToReact("{\"type\":\"debug\",\"message\":\"Room created from " + meshData.meshes.Length + " meshes\"}");
         
         // Position camera to view the room
         if (mainCamera != null)
@@ -715,10 +748,10 @@ public class DungeonController : MonoBehaviour
                 meshData.boundingBox.max.z - meshData.boundingBox.min.z
             );
             
-            mainCamera.transform.position = boundingCenter + new Vector3(0, boundingSize, boundingSize);
+            mainCamera.transform.position = boundingCenter + new Vector3(0, boundingSize * 1.5f, boundingSize * 1.5f);
             mainCamera.transform.LookAt(boundingCenter);
             
-            DebugLog($"Camera positioned to view actual mesh room");
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Camera positioned at " + mainCamera.transform.position + "\"}");
         }
     }
 }
