@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, Play } from "lucide-react";
-const logoPath = "/kinquescape-logo-red.svg";
+const logoPath = "/logo.svg";
 
 export default function HomePage() {
   return (
@@ -37,7 +37,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <img 
-              src="/kinquescape-logo-red.svg" 
+              src="/logo.svg" 
               alt="KinqueScape Logo" 
               className="w-24 h-24 object-contain"
             />

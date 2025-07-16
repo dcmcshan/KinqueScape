@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home, Shield } from "lucide-react";
-const logoPath = "/kinquescape-logo-red.svg";
+const logoPath = "/logo.svg";
 
 export default function Sidebar() {
   const [location] = useLocation();
