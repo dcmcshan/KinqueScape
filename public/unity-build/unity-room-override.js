@@ -76,20 +76,22 @@ window.UnityRoomOverride = {
     const centerY = height / 2;
     const offsetZ = 8; // Camera distance for better perspective
     
-    // Define complex dungeon room architecture with angles and windows
+    // Define complex dungeon room architecture with ANGLED BOTTOM CORNER
     // Using actual room dimensions: 19ft 4in (5.9m) wide
     const dungeonPoints = [
-      // Main floor outline (irregular dungeon shape)
+      // Main floor outline with angled bottom corner
       {x: -2.95, y: -1.5, z: 3.19},   // Front left
       {x: -1.5, y: -1.5, z: 3.19},    // Front left angle
       {x: 1.5, y: -1.5, z: 3.19},     // Front right angle
       {x: 2.95, y: -1.5, z: 3.19},    // Front right
       {x: 2.95, y: -1.5, z: 1.0},     // Right front
       {x: 2.95, y: -1.5, z: -1.0},    // Right back
-      {x: 2.95, y: -1.5, z: -3.19},   // Back right
-      {x: 1.5, y: -1.5, z: -3.19},    // Back right angle
-      {x: -1.5, y: -1.5, z: -3.19},   // Back left angle
-      {x: -2.95, y: -1.5, z: -3.19},  // Back left
+      {x: 2.95, y: -1.5, z: -2.5},    // Back right before angle
+      {x: 1.8, y: -1.5, z: -3.19},    // Back right angled corner
+      {x: 0.5, y: -1.5, z: -3.19},    // Bottom center right
+      {x: -0.5, y: -1.5, z: -3.19},   // Bottom center left
+      {x: -1.8, y: -1.5, z: -3.19},   // Back left angled corner
+      {x: -2.95, y: -1.5, z: -2.5},   // Back left before angle
       {x: -2.95, y: -1.5, z: -1.0},   // Left back
       {x: -2.95, y: -1.5, z: 1.0}     // Left front
     ];
