@@ -65,29 +65,33 @@ window.UnityRoomOverride = {
   drawGLBRoom3D: function(width, height) {
     const ctx = this.ctx;
     
-    // GLB room dimensions: 5.42 x 2.91 x 6.38
-    const roomWidth = 5.42;
-    const roomHeight = 2.91;
-    const roomDepth = 6.38;
+    // GLB room dimensions in METERS: 19ft 4in = 5.9m wide
+    const roomWidth = 5.9;   // meters (19ft 4in)
+    const roomHeight = 2.91; // meters (ceiling height)
+    const roomDepth = 6.38;  // meters (depth)
     
-    // 3D perspective transformation
-    const scale = Math.min(width, height) * 0.1;
+    // 3D perspective transformation - scale for meters
+    const scale = Math.min(width, height) * 0.08; // Bigger scale for meter dimensions
     const centerX = width / 2;
     const centerY = height / 2;
-    const offsetZ = 2; // Camera distance
+    const offsetZ = 8; // Camera distance for better perspective
     
-    // Define room corners in 3D space
-    const corners = [
-      // Front face (closer to camera)
-      {x: -roomWidth/2, y: -roomHeight/2, z: roomDepth/2},
-      {x: roomWidth/2, y: -roomHeight/2, z: roomDepth/2},
-      {x: roomWidth/2, y: roomHeight/2, z: roomDepth/2},
-      {x: -roomWidth/2, y: roomHeight/2, z: roomDepth/2},
-      // Back face (farther from camera) 
-      {x: -roomWidth/2, y: -roomHeight/2, z: -roomDepth/2},
-      {x: roomWidth/2, y: -roomHeight/2, z: -roomDepth/2},
-      {x: roomWidth/2, y: roomHeight/2, z: -roomDepth/2},
-      {x: -roomWidth/2, y: roomHeight/2, z: -roomDepth/2}
+    // Define complex dungeon room architecture with angles and windows
+    // Using actual room dimensions: 19ft 4in (5.9m) wide
+    const dungeonPoints = [
+      // Main floor outline (irregular dungeon shape)
+      {x: -2.95, y: -1.5, z: 3.19},   // Front left
+      {x: -1.5, y: -1.5, z: 3.19},    // Front left angle
+      {x: 1.5, y: -1.5, z: 3.19},     // Front right angle
+      {x: 2.95, y: -1.5, z: 3.19},    // Front right
+      {x: 2.95, y: -1.5, z: 1.0},     // Right front
+      {x: 2.95, y: -1.5, z: -1.0},    // Right back
+      {x: 2.95, y: -1.5, z: -3.19},   // Back right
+      {x: 1.5, y: -1.5, z: -3.19},    // Back right angle
+      {x: -1.5, y: -1.5, z: -3.19},   // Back left angle
+      {x: -2.95, y: -1.5, z: -3.19},  // Back left
+      {x: -2.95, y: -1.5, z: -1.0},   // Left back
+      {x: -2.95, y: -1.5, z: 1.0}     // Left front
     ];
     
     // Project 3D points to 2D screen
@@ -99,59 +103,95 @@ window.UnityRoomOverride = {
       };
     };
     
-    const projected = corners.map(project);
+    const projected = dungeonPoints.map(project);
     
-    // Draw room walls
-    ctx.strokeStyle = '#8B4513'; // Brown walls
-    ctx.fillStyle = '#654321';
+    // Draw stone floor with irregular dungeon shape
+    ctx.fillStyle = '#4a4a4a'; // Dark stone floor
+    ctx.strokeStyle = '#8B4513'; // Brown stone outline
+    ctx.lineWidth = 2;
+    
+    ctx.beginPath();
+    ctx.moveTo(projected[0].x, projected[0].y);
+    for (let i = 1; i < projected.length; i++) {
+      ctx.lineTo(projected[i].x, projected[i].y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Draw dungeon walls with height
+    ctx.fillStyle = '#654321'; // Brown stone walls
+    ctx.strokeStyle = '#8B4513';
     ctx.lineWidth = 3;
     
-    // Floor
-    ctx.beginPath();
-    ctx.moveTo(projected[0].x, projected[0].y);
-    ctx.lineTo(projected[1].x, projected[1].y);
-    ctx.lineTo(projected[5].x, projected[5].y);
-    ctx.lineTo(projected[4].x, projected[4].y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    
-    // Left wall
-    ctx.beginPath();
-    ctx.moveTo(projected[0].x, projected[0].y);
-    ctx.lineTo(projected[3].x, projected[3].y);
-    ctx.lineTo(projected[7].x, projected[7].y);
-    ctx.lineTo(projected[4].x, projected[4].y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    
-    // Right wall
-    ctx.beginPath();
-    ctx.moveTo(projected[1].x, projected[1].y);
-    ctx.lineTo(projected[2].x, projected[2].y);
-    ctx.lineTo(projected[6].x, projected[6].y);
-    ctx.lineTo(projected[5].x, projected[5].y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    
-    // Back wall
-    ctx.beginPath();
-    ctx.moveTo(projected[4].x, projected[4].y);
-    ctx.lineTo(projected[5].x, projected[5].y);
-    ctx.lineTo(projected[6].x, projected[6].y);
-    ctx.lineTo(projected[7].x, projected[7].y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    // Draw wall segments with proper perspective
+    for (let i = 0; i < dungeonPoints.length; i++) {
+      const current = dungeonPoints[i];
+      const next = dungeonPoints[(i + 1) % dungeonPoints.length];
+      
+      // Wall bottom points
+      const bottomCurrent = project(current);
+      const bottomNext = project(next);
+      
+      // Wall top points (add height)
+      const topCurrent = project({x: current.x, y: current.y + 2.9, z: current.z});
+      const topNext = project({x: next.x, y: next.y + 2.9, z: next.z});
+      
+      // Draw wall segment
+      ctx.beginPath();
+      ctx.moveTo(bottomCurrent.x, bottomCurrent.y);
+      ctx.lineTo(bottomNext.x, bottomNext.y);
+      ctx.lineTo(topNext.x, topNext.y);
+      ctx.lineTo(topCurrent.x, topCurrent.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      
+      // Add windows to some wall segments
+      if (i === 2 || i === 7) { // Add windows to front-right and back-left walls
+        this.drawDungeonWindow(ctx, bottomCurrent, bottomNext, topCurrent, topNext);
+      }
+    }
     
     // Add dimension labels
     ctx.fillStyle = '#FF0000';
     ctx.font = '16px Arial';
-    ctx.fillText(`GLB Room: ${roomWidth} x ${roomHeight} x ${roomDepth}`, 10, 30);
+    ctx.fillText(`GLB Dungeon: ${roomWidth}m x ${roomHeight}m x ${roomDepth}m`, 10, 30);
+    ctx.fillText(`Wide side: 19ft 4in (${roomWidth}m)`, 10, 50);
     
-    console.log('Unity Override: Drew GLB-accurate 3D room on canvas');
+    console.log('Unity Override: Drew GLB-accurate 3D dungeon room with angles and windows');
+  },
+  
+  drawDungeonWindow: function(ctx, bottomLeft, bottomRight, topLeft, topRight) {
+    // Draw a medieval dungeon window
+    const windowHeight = Math.abs(topLeft.y - bottomLeft.y) * 0.4;
+    const windowWidth = Math.abs(bottomRight.x - bottomLeft.x) * 0.3;
+    
+    // Window frame position (centered on wall)
+    const centerX = (bottomLeft.x + bottomRight.x) / 2;
+    const centerY = (bottomLeft.y + topLeft.y) / 2;
+    
+    // Draw window frame
+    ctx.fillStyle = '#2F4F4F'; // Dark slate gray
+    ctx.fillRect(centerX - windowWidth/2, centerY - windowHeight/2, windowWidth, windowHeight);
+    
+    // Draw window bars (medieval style)
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 3;
+    
+    // Vertical bar
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - windowHeight/2);
+    ctx.lineTo(centerX, centerY + windowHeight/2);
+    ctx.stroke();
+    
+    // Horizontal bar
+    ctx.beginPath();
+    ctx.moveTo(centerX - windowWidth/2, centerY);
+    ctx.lineTo(centerX + windowWidth/2, centerY);
+    ctx.stroke();
+    
+    console.log('Unity Override: Drew dungeon window with medieval bars');
   },
   
   tryUnityPrimitiveFallback: function() {
