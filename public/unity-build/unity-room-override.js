@@ -16,10 +16,17 @@ window.UnityRoomOverride = {
       return;
     }
     
-    // Get Unity's canvas and drawing context
-    this.canvas = unityInstance.Module.canvas;
+    // Get Unity's canvas multiple ways
+    this.canvas = unityInstance.Module?.canvas || 
+                 document.getElementById('unity-canvas') || 
+                 document.querySelector('canvas') ||
+                 document.querySelector('#unity-container canvas');
+    
     if (this.canvas && this.canvas.getContext) {
       this.ctx = this.canvas.getContext('2d');
+      console.log('Unity Override: Canvas found and context acquired');
+    } else {
+      console.log('Unity Override: Canvas not found, using fallback');
     }
     
     // Override Unity's rendering with correct room
@@ -148,23 +155,72 @@ window.UnityRoomOverride = {
   },
   
   tryUnityPrimitiveFallback: function() {
-    // Fallback: Try Unity's built-in primitive creation
+    // Fallback: Completely stop Unity's automatic updates to prevent flashing
     try {
-      console.log('Unity Override: Trying Unity primitive fallback');
+      console.log('Unity Override: Stopping Unity automatic updates to prevent flashing');
       
-      // Create basic cubes using Unity's internal functions
-      if (window.Module && window.Module._malloc) {
-        console.log('Unity Override: Using WebAssembly direct calls');
-        // This would require deeper Unity WebAssembly integration
+      // Stop all Unity update loops
+      if (this.unityInstance && this.unityInstance.Module) {
+        // Override Unity's main loop to prevent rendering
+        const module = this.unityInstance.Module;
+        
+        // Stop the main Unity update loop
+        if (module.pauseMainLoop) {
+          module.pauseMainLoop();
+        }
+        
+        // Clear any intervals or animation frames Unity might be using
+        if (window.unityUpdateInterval) {
+          clearInterval(window.unityUpdateInterval);
+        }
+        
+        // Override requestAnimationFrame to prevent Unity from using it
+        const originalRAF = window.requestAnimationFrame;
+        window.requestAnimationFrame = function(callback) {
+          // Only allow our canvas drawing, block Unity's
+          if (callback.toString().includes('Unity') || callback.toString().includes('Module')) {
+            return; // Block Unity's animation frames
+          }
+          return originalRAF.call(window, callback);
+        };
+        
+        console.log('Unity Override: Stopped Unity update loops');
       }
       
-      // Alternative: Force Unity to create visible objects
-      this.unityInstance.SendMessage('GameObject', 'Find', 'Main Camera');
-      this.unityInstance.SendMessage('Camera', 'set_backgroundColor', '0.1,0.1,0.1,1');
+      // Try to find any canvas and draw directly
+      const canvases = document.querySelectorAll('canvas');
+      console.log(`Unity Override: Found ${canvases.length} canvas elements`);
+      
+      canvases.forEach((canvas, index) => {
+        console.log(`Unity Override: Canvas ${index} - size: ${canvas.width}x${canvas.height}`);
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          this.drawDirectOnCanvas(ctx, canvas.width, canvas.height);
+        }
+      });
       
     } catch (error) {
-      console.log('Unity Override: Primitive fallback failed');
+      console.log('Unity Override: Fallback failed:', error);
     }
+  },
+  
+  drawDirectOnCanvas: function(ctx, width, height) {
+    // Draw the GLB room directly on any canvas we find
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw GLB room outline
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(width * 0.2, height * 0.2, width * 0.6, height * 0.6);
+    
+    // Add text
+    ctx.fillStyle = '#FF0000';
+    ctx.font = '20px Arial';
+    ctx.fillText('GLB Room: 5.42 x 2.91 x 6.38', 10, 30);
+    ctx.fillText('Room Override Active', 10, 60);
+    
+    console.log('Unity Override: Drew room directly on canvas');
   },
   
   createPersistentRoom: function() {
@@ -239,18 +295,24 @@ window.UnityRoomOverride = {
   },
   
   setupRoomDrawing: function() {
-    // Continuously redraw the correct room over Unity's output
-    const redrawRoom = () => {
-      if (this.canvas && this.ctx) {
-        this.overrideUnityRender();
+    // Draw the room once and stop Unity from overriding it
+    if (this.canvas && this.ctx) {
+      this.overrideUnityRender();
+      console.log('Unity Override: Room drawn once, stopping Unity updates');
+      
+      // Stop Unity from redrawing by intercepting its render calls
+      if (this.unityInstance && this.unityInstance.Module) {
+        const originalRender = this.unityInstance.Module._main;
+        if (originalRender) {
+          this.unityInstance.Module._main = () => {
+            // Do nothing to prevent Unity from rendering
+          };
+        }
       }
-      requestAnimationFrame(redrawRoom);
-    };
-    
-    // Start the drawing loop
-    requestAnimationFrame(redrawRoom);
-    
-    console.log('Unity Override: Continuous room drawing active');
+    } else {
+      console.log('Unity Override: No canvas access, using message-based approach');
+      this.tryUnityPrimitiveFallback();
+    }
   },
   
   forceRender: function(unityInstance) {
