@@ -135,7 +135,8 @@
     ctx.font = '14px Arial';
     ctx.fillText(lightCount + ' Light Sources Active', canvas.width / 2, 50);
     
-    // Draw devices
+    // Draw devices with enhanced visibility
+    console.log('Unity: Drawing', currentDevices.length, 'devices');
     currentDevices.forEach(function(device) {
       drawDevice(ctx, device, canvas.width, canvas.height);
     });
@@ -160,33 +161,52 @@
   }
   
   function drawDevice(ctx, device, canvasWidth, canvasHeight) {
-    var x = (device.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
-    var y = (device.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    // Convert 3D position to 2D canvas coordinates
+    var x = ((device.position.x + 5) / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
+    var y = ((device.position.z + 5) / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    
+    console.log('Unity: Drawing device', device.name, 'at', x, y, 'type:', device.type);
     
     // Special handling for light sources
     if (device.type === 'light') {
+      console.log('Unity: Drawing LIGHT at', x, y, device.name);
       // Draw light glow effect
-      var gradient = ctx.createRadialGradient(x, y, 0, x, y, 25);
-      gradient.addColorStop(0, 'rgba(255, 200, 100, 0.8)');
-      gradient.addColorStop(0.5, 'rgba(255, 150, 50, 0.4)');
-      gradient.addColorStop(1, 'rgba(255, 100, 0, 0.1)');
+      var gradient = ctx.createRadialGradient(x, y, 0, x, y, 30);
+      gradient.addColorStop(0, 'rgba(255, 200, 100, 0.9)');
+      gradient.addColorStop(0.3, 'rgba(255, 150, 50, 0.6)');
+      gradient.addColorStop(0.7, 'rgba(255, 100, 0, 0.3)');
+      gradient.addColorStop(1, 'rgba(255, 50, 0, 0.1)');
       ctx.fillStyle = gradient;
-      ctx.fillRect(x - 25, y - 25, 50, 50);
+      ctx.fillRect(x - 30, y - 30, 60, 60);
       
-      // Draw torch/light icon
+      // Draw torch/light icon - larger and brighter
       ctx.beginPath();
-      ctx.arc(x, y, 12, 0, 2 * Math.PI);
-      ctx.fillStyle = device.status === 'online' ? '#ffdd44' : '#666';
+      ctx.arc(x, y, 15, 0, 2 * Math.PI);
+      ctx.fillStyle = device.status === 'online' ? '#ffff44' : '#666';
       ctx.fill();
+      
+      // Add bright border for lights
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.stroke();
       
       // Add flame effect for online lights
       if (device.status === 'online') {
         ctx.beginPath();
-        ctx.moveTo(x, y - 12);
-        ctx.lineTo(x - 6, y - 20);
-        ctx.lineTo(x + 6, y - 20);
+        ctx.moveTo(x, y - 15);
+        ctx.lineTo(x - 8, y - 25);
+        ctx.lineTo(x + 8, y - 25);
         ctx.closePath();
-        ctx.fillStyle = '#ff6600';
+        ctx.fillStyle = '#ff3300';
+        ctx.fill();
+        
+        // Add inner flame
+        ctx.beginPath();
+        ctx.moveTo(x, y - 15);
+        ctx.lineTo(x - 4, y - 22);
+        ctx.lineTo(x + 4, y - 22);
+        ctx.closePath();
+        ctx.fillStyle = '#ffaa00';
         ctx.fill();
       }
     } else {
