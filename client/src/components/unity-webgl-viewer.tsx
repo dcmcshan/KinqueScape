@@ -45,7 +45,8 @@ export default function UnityWebGLViewer({
       0.1,
       1000
     );
-    camera.position.set(0, 5, 10);
+    camera.position.set(8, 8, 8);
+    camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
     // Renderer setup
@@ -224,30 +225,82 @@ export default function UnityWebGLViewer({
   useEffect(() => {
     if (!sceneRef.current) return;
 
-    // Clear existing participant markers
+    // Clear existing participant markers and labels
     const participantsToRemove = sceneRef.current.children.filter(child => 
-      child.userData.type === 'participant'
+      child.userData.type === 'participant' || child.userData.type === 'participant-label'
     );
     participantsToRemove.forEach(participant => sceneRef.current!.remove(participant));
 
-    // Add new participant markers
+    // Add new participant markers (human-like figures)
     participants.forEach(participant => {
-      const geometry = new THREE.ConeGeometry(0.3, 1, 8);
-      const material = new THREE.MeshBasicMaterial({ 
+      const group = new THREE.Group();
+      
+      // Position participant within the dungeon bounds
+      const x = (participant.positionX || 0) * 0.3; // Scale down positions
+      const z = (participant.positionY || 0) * 0.3; // Use Y as Z coordinate
+      
+      // Create human-like figure
+      const bodyMaterial = new THREE.MeshBasicMaterial({ 
         color: 0x0099ff,
         transparent: true,
         opacity: 0.9
       });
-      const marker = new THREE.Mesh(geometry, material);
       
-      marker.position.set(
-        participant.positionX || 0, 
-        0.5, 
-        participant.positionY || 0
-      );
+      // Head
+      const headGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+      const head = new THREE.Mesh(headGeometry, bodyMaterial);
+      head.position.set(0, 1.6, 0);
+      group.add(head);
       
-      marker.userData = { type: 'participant', data: participant };
-      sceneRef.current!.add(marker);
+      // Body (torso)
+      const bodyGeometry = new THREE.BoxGeometry(0.4, 0.8, 0.2);
+      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      body.position.set(0, 1.0, 0);
+      group.add(body);
+      
+      // Arms
+      const armGeometry = new THREE.BoxGeometry(0.1, 0.6, 0.1);
+      const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+      leftArm.position.set(-0.3, 1.0, 0);
+      group.add(leftArm);
+      
+      const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
+      rightArm.position.set(0.3, 1.0, 0);
+      group.add(rightArm);
+      
+      // Legs
+      const legGeometry = new THREE.BoxGeometry(0.15, 0.6, 0.15);
+      const leftLeg = new THREE.Mesh(legGeometry, bodyMaterial);
+      leftLeg.position.set(-0.1, 0.3, 0);
+      group.add(leftLeg);
+      
+      const rightLeg = new THREE.Mesh(legGeometry, bodyMaterial);
+      rightLeg.position.set(0.1, 0.3, 0);
+      group.add(rightLeg);
+      
+      // Position the entire figure
+      group.position.set(x, 0, z);
+      
+      // Add a label above the participant
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      canvas.width = 256;
+      canvas.height = 64;
+      context.fillStyle = '#ffffff';
+      context.font = '20px Arial';
+      context.fillText(participant.participantName, 10, 40);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const labelMaterial = new THREE.SpriteMaterial({ map: texture });
+      const label = new THREE.Sprite(labelMaterial);
+      label.position.set(x, 2.5, z);
+      label.scale.set(2, 0.5, 1);
+      
+      group.userData = { type: 'participant', data: participant };
+      label.userData = { type: 'participant-label', data: participant };
+      
+      sceneRef.current!.add(group);
+      sceneRef.current!.add(label);
     });
   }, [participants]);
 
