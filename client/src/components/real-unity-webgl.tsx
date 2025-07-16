@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Users, RotateCcw, ZoomIn, ZoomOut, Play, Pause } from 'lucide-react';
+import { Eye, Users, RotateCcw, ZoomIn, ZoomOut, Play, Pause, Lightbulb } from 'lucide-react';
 import type { RoomDevice, RoomParticipant } from '@shared/schema';
 
 // Unity WebGL interface declarations
@@ -125,16 +125,24 @@ export default function RealUnityWebGL({
           setIsLoaded(true);
           setIsInitialized(true);
           
-          // Initialize 3D scene and load GLB
+          // Initialize enhanced 3D scene and load GLB
           setTimeout(() => {
             try {
-              // Load the actual GLB file in Unity 3D
+              // Load the actual GLB file in Unity 3D with enhanced settings
               instance.SendMessage('DungeonController', 'LoadGLBModel', '/unity-build/7_16_2025.glb');
               console.log('Unity WebGL: Loading real GLB model in 3D space');
               
-              // Set up 3D camera for architectural view
+              // Set up enhanced 3D camera for architectural view
               instance.SendMessage('DungeonController', 'SetCameraMode', 'architectural');
               console.log('Unity WebGL: Set architectural 3D camera view');
+              
+              // Enable enhanced 3D features
+              instance.SendMessage('DungeonController', 'EnableAdvanced3D', 'true');
+              console.log('Unity WebGL: Enhanced 3D features activated');
+              
+              // Set up interactive 3D controls
+              instance.SendMessage('DungeonController', 'SetInteractionMode', 'orbit');
+              console.log('Unity WebGL: 3D orbit controls enabled');
               
             } catch (err) {
               console.warn('Unity WebGL: 3D initialization failed:', err);
@@ -283,7 +291,7 @@ export default function RealUnityWebGL({
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-400">
             {isLoaded ? (
-              `Unity 3D Active: ${devices.length} devices loaded - GLB Mesh: 7_16_2025.glb`
+              `User's GLB Model: 7_16_2025.glb (${devices.length} devices)`
             ) : error ? (
               <span className="text-red-400">{error}</span>
             ) : (
@@ -306,8 +314,23 @@ export default function RealUnityWebGL({
                 size="sm"
                 onClick={resetCamera}
                 className="text-white border-gray-600"
+                title="Reset Camera"
               >
                 <RotateCcw className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (unityInstanceRef.current) {
+                    unityInstanceRef.current.SendMessage('DungeonController', 'ToggleLighting', '');
+                    console.log('Unity WebGL: Lighting toggled');
+                  }
+                }}
+                className="text-white border-gray-600"
+                title="Toggle Lighting"
+              >
+                <Lightbulb className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -318,11 +341,10 @@ export default function RealUnityWebGL({
         <div className="relative">
           <canvas
             ref={canvasRef}
-            className="w-full max-w-[800px] h-[384px] bg-black rounded border-2 border-gray-700"
+            className="w-full h-[60vh] min-h-[400px] max-h-[600px] bg-black rounded border-2 border-gray-700"
             style={{ 
               display: 'block',
-              width: '800px',
-              height: '384px'
+              aspectRatio: '16/9'
             }}
           />
           

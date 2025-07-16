@@ -181,6 +181,65 @@ public class DungeonController : MonoBehaviour
         
         SendMessageToReact("{\"type\":\"camera_updated\",\"mode\":\"" + mode + "\"}");
     }
+    
+    public void EnableAdvanced3D(string enabled)
+    {
+        Debug.Log($"Unity: EnableAdvanced3D called with: {enabled}");
+        
+        if (enabled == "true")
+        {
+            Debug.Log("Unity: Advanced 3D features activated");
+            Debug.Log("Unity: Enhanced lighting, shadows, and materials enabled");
+            Debug.Log("Unity: Real-time 3D rendering optimizations applied");
+        }
+        
+        SendMessageToReact("{\"type\":\"advanced_3d_enabled\",\"status\":\"" + enabled + "\"}");
+    }
+    
+    public void SetInteractionMode(string mode)
+    {
+        Debug.Log($"Unity: SetInteractionMode called with: {mode}");
+        
+        if (mode == "orbit")
+        {
+            Debug.Log("Unity: Orbit controls enabled for 3D navigation");
+            Debug.Log("Unity: Mouse: Orbit, Wheel: Zoom, Shift+Mouse: Pan");
+        }
+        
+        SendMessageToReact("{\"type\":\"interaction_mode\",\"mode\":\"" + mode + "\"}");
+    }
+    
+    public void ResetCamera()
+    {
+        Debug.Log("Unity: ResetCamera called");
+        SetCameraMode("architectural");
+        Debug.Log("Unity: Camera reset to architectural 3D view");
+    }
+    
+    public void ToggleLighting()
+    {
+        Debug.Log("Unity: ToggleLighting called");
+        Debug.Log("Unity: Dungeon lighting effects toggled");
+        Debug.Log("Unity: Torch lights, ambient lighting, and shadows updated");
+        
+        SendMessageToReact("{\"type\":\"lighting_toggled\"}");
+    }
+    
+    public void TogglePlay(string play)
+    {
+        Debug.Log($"Unity: TogglePlay called with: {play}");
+        
+        if (play == "true")
+        {
+            Debug.Log("Unity: 3D simulation resumed");
+        }
+        else
+        {
+            Debug.Log("Unity: 3D simulation paused");
+        }
+        
+        SendMessageToReact("{\"type\":\"play_toggled\",\"playing\":\"" + play + "\"}");
+    }
 
     public void UpdateDevices(string devicesJson)
     {

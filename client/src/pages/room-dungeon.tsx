@@ -174,44 +174,147 @@ export default function RoomDungeonPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 3D Room Visualization */}
-        <div className="lg:col-span-2">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-            {/* Unity WebGL 3D Viewer with Your Custom Space */}
-            <div className="xl:col-span-2">
-              <RealUnityWebGL
-                devices={devices}
-                participants={participants}
-                onDeviceClick={(device) => {
-                  controlDeviceMutation.mutate({
-                    deviceId: device.id,
-                    status: device.status === "online" ? "offline" : "online",
-                  });
-                }}
-                onParticipantClick={(participant) => {
-                  setSelectedParticipant(participant.id);
-                }}
-              />
-            </div>
-            
-            {/* 2D Mini-Map */}
-            <div className="xl:col-span-1">
-              <Minimap2D
-                devices={devices}
-                participants={participants}
-                onDeviceClick={(device) => {
-                  controlDeviceMutation.mutate({
-                    deviceId: device.id,
-                    status: device.status === "online" ? "offline" : "online",
-                  });
-                }}
-                onParticipantClick={(participant) => {
-                  setSelectedParticipant(participant.id);
-                }}
-              />
-            </div>
+      <div className="space-y-6">
+        {/* Unity 3D Viewer - Full Width Priority */}
+        <div className="w-full">
+          <RealUnityWebGL
+            devices={devices}
+            participants={participants}
+            onDeviceClick={(device) => {
+              controlDeviceMutation.mutate({
+                deviceId: device.id,
+                status: device.status === "online" ? "offline" : "online",
+              });
+            }}
+            onParticipantClick={(participant) => {
+              setSelectedParticipant(participant.id);
+            }}
+          />
+        </div>
+
+        {/* Secondary Controls Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 2D Mini-Map */}
+          <div className="lg:col-span-1">
+            <Minimap2D
+              devices={devices}
+              participants={participants}
+              onDeviceClick={(device) => {
+                controlDeviceMutation.mutate({
+                  deviceId: device.id,
+                  status: device.status === "online" ? "offline" : "online",
+                });
+              }}
+              onParticipantClick={(participant) => {
+                setSelectedParticipant(participant.id);
+              }}
+            />
           </div>
+
+          {/* Device Controls */}
+          <div className="lg:col-span-2">
+            <Card className="tron-card">
+              <CardHeader>
+                <CardTitle className="text-accent">Device Controls</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {devices.slice(0, 8).map((device) => (
+                    <div
+                      key={device.id}
+                      className="tron-card p-3 rounded-lg text-center"
+                    >
+                      <div className="flex items-center justify-center mb-1">
+                        {getDeviceIcon(device.type)}
+                      </div>
+                      <h4 className="font-medium text-xs mb-1 truncate">{device.name}</h4>
+                      <Badge
+                        variant={device.status === "online" ? "default" : "secondary"}
+                        className="text-xs mb-1"
+                      >
+                        {device.status}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full tron-button text-xs"
+                        onClick={() => controlDeviceMutation.mutate({
+                          deviceId: device.id,
+                          status: device.status === "online" ? "offline" : "online",
+                        })}
+                      >
+                        Toggle
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Monitoring Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Participants */}
+          <Card className="tron-card">
+            <CardHeader>
+              <CardTitle className="text-accent flex items-center">
+                <Users className="w-5 h-5 mr-2" />
+                Participants ({participants.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {participants.length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-gray-400 mb-3">No participants in the room</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="tron-button"
+                      onClick={() => addParticipantMutation.mutate()}
+                      disabled={addParticipantMutation.isPending}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Demo Participant
+                    </Button>
+                  </div>
+                ) : (
+                  participants.map((participant) => {
+                    const biometric = getParticipantBiometrics(participant.id);
+                    const stressLevel = getStressLevel(biometric?.heartRate || undefined, biometric?.hrv || undefined);
+                    
+                    return (
+                      <div
+                        key={participant.id}
+                        className={`tron-card p-3 rounded-lg cursor-pointer transition-all ${
+                          selectedParticipant === participant.id ? 'tron-glow' : ''
+                        }`}
+                        onClick={() => setSelectedParticipant(participant.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">{participant.name}</h4>
+                            <p className="text-sm text-gray-400">Watch: {participant.watchId}</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={getStressBadgeVariant(stressLevel)}>
+                              {stressLevel}
+                            </Badge>
+                            {biometric && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                HR: {biometric.heartRate} BPM
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Device Controls */}
           <Card className="tron-card">
