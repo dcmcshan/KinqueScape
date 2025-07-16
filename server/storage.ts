@@ -124,14 +124,28 @@ export class MemStorage implements IStorage {
     this.rooms.set(1, dungeonRoom);
     this.currentRoomId = 2;
     
-    // Add demo devices
+    // Add demo devices including torture devices
     const devices = [
       { name: "Main Door Lock", type: "lock", location: { x: 0, y: 0, z: 5 } },
       { name: "Torch Light 1", type: "light", location: { x: -2, y: 2, z: 0 } },
       { name: "Torch Light 2", type: "light", location: { x: 2, y: 2, z: 0 } },
       { name: "Ambient Sound", type: "sound", location: { x: 0, y: 3, z: 0 } },
-      { name: "Treasure Chest", type: "prop", location: { x: 0, y: 0, z: -3 } },
       { name: "Security Camera", type: "camera", location: { x: 0, y: 4, z: 0 } },
+      { name: "Iron Maiden", type: "prop", location: { x: -3, y: 0, z: -2 } },
+      { name: "Torture Rack", type: "prop", location: { x: 3, y: 0, z: -2 } },
+      { name: "Guillotine", type: "prop", location: { x: 0, y: 0, z: -4 } },
+      { name: "Chains & Shackles", type: "prop", location: { x: -2, y: 0, z: 2 } },
+      { name: "Dungeon Wheel", type: "prop", location: { x: 2, y: 0, z: 2 } },
+      { name: "Skull Display", type: "prop", location: { x: -1, y: 1, z: -1 } },
+      { name: "Cauldron", type: "prop", location: { x: 1, y: 0, z: -1 } },
+      { name: "Coffin", type: "prop", location: { x: 0, y: 0, z: 0 } },
+      { name: "Pressure Plate", type: "sensor", location: { x: 0, y: 0, z: 1 } },
+      { name: "Spike Trap", type: "prop", location: { x: -1, y: 0, z: 3 } },
+      { name: "Pendulum", type: "prop", location: { x: 1, y: 2, z: 1 } },
+      { name: "Cage", type: "prop", location: { x: 2, y: 0, z: 0 } },
+      { name: "Executioner's Block", type: "prop", location: { x: -2, y: 0, z: 0 } },
+      { name: "Torture Chamber Sound", type: "sound", location: { x: 0, y: 1, z: -2 } },
+      { name: "Flickering Torch", type: "light", location: { x: 0, y: 2, z: -3 } },
     ];
     
     devices.forEach((device, index) => {

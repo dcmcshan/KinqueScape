@@ -6,23 +6,23 @@ import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, 
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-background/95 backdrop-blur-sm tron-border border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <DraftingCompass className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center tron-glow">
+                <DraftingCompass className="w-5 h-5 text-background" />
               </div>
-              <span className="text-xl font-bold text-gray-900">KinqueScape</span>
+              <span className="text-xl font-bold tron-text">KinqueScape</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
-              <a href="#about" className="text-gray-600 hover:text-gray-900">About</a>
+              <a href="#features" className="text-muted-foreground hover:text-accent">Features</a>
+              <a href="#pricing" className="text-muted-foreground hover:text-accent">Pricing</a>
+              <a href="#about" className="text-muted-foreground hover:text-accent">About</a>
               <Link href="/design">
-                <Button variant="outline">Get Started</Button>
+                <Button variant="outline" className="tron-button">Get Started</Button>
               </Link>
             </nav>
           </div>
@@ -32,25 +32,25 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <Badge className="mb-4 bg-primary/10 text-primary">Launch Your Escape Room Empire</Badge>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          <Badge className="mb-4 bg-accent/10 text-accent border-accent">Launch Your Escape Room Empire</Badge>
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
             Design, Plan & Execute
             <br />
-            <span className="text-primary">Amazing 'Scapes</span>
+            <span className="tron-text">Amazing 'Scapes</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             The complete platform for escape room entrepreneurs. From initial concept to profitable business - 
             design immersive experiences, create solid business plans, and manage your 'scapes with confidence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/design">
-              <Button size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto tron-button">
                 <Play className="w-4 h-4 mr-2" />
                 Start Designing
               </Button>
             </Link>
             <Link href="/dash">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto tron-button">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 View Demo
               </Button>
