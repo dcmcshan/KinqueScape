@@ -12,9 +12,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center tron-glow">
-                <DraftingCompass className="w-5 h-5 text-background" />
-              </div>
+              <img 
+                src="@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png" 
+                alt="KinqueScape Logo" 
+                className="w-8 h-8 object-contain"
+              />
               <span className="text-xl font-bold tron-text">KinqueScape</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
@@ -32,6 +34,13 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png" 
+              alt="KinqueScape Logo" 
+              className="w-24 h-24 object-contain"
+            />
+          </div>
           <Badge className="mb-4 bg-accent/10 text-accent border-accent">Launch Your Escape Room Empire</Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
             Design, Plan & Execute
@@ -213,9 +222,11 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                  <DraftingCompass className="w-4 h-4 text-white" />
-                </div>
+                <img 
+                  src="@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png" 
+                  alt="KinqueScape Logo" 
+                  className="w-6 h-6 object-contain"
+                />
                 <span className="text-lg font-bold">KinqueScape</span>
               </div>
               <p className="text-gray-400">The complete platform for escape room entrepreneurs.</p>

@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import UnityWebGLComponent from "@/components/unity-webgl-component";
+import Minimap2D from "@/components/minimap-2d";
 import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
 
 export default function RoomDungeonPage() {
@@ -175,20 +176,40 @@ export default function RoomDungeonPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 3D Room Visualization */}
         <div className="lg:col-span-2">
-          <div className="mb-6">
-            <UnityWebGLComponent
-              devices={devices}
-              participants={participants}
-              onDeviceClick={(device) => {
-                controlDeviceMutation.mutate({
-                  deviceId: device.id,
-                  status: device.status === "online" ? "offline" : "online",
-                });
-              }}
-              onParticipantClick={(participant) => {
-                setSelectedParticipant(participant.id);
-              }}
-            />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            {/* Unity 3D Viewer */}
+            <div className="xl:col-span-2">
+              <UnityWebGLComponent
+                devices={devices}
+                participants={participants}
+                onDeviceClick={(device) => {
+                  controlDeviceMutation.mutate({
+                    deviceId: device.id,
+                    status: device.status === "online" ? "offline" : "online",
+                  });
+                }}
+                onParticipantClick={(participant) => {
+                  setSelectedParticipant(participant.id);
+                }}
+              />
+            </div>
+            
+            {/* 2D Mini-Map */}
+            <div className="xl:col-span-1">
+              <Minimap2D
+                devices={devices}
+                participants={participants}
+                onDeviceClick={(device) => {
+                  controlDeviceMutation.mutate({
+                    deviceId: device.id,
+                    status: device.status === "online" ? "offline" : "online",
+                  });
+                }}
+                onParticipantClick={(participant) => {
+                  setSelectedParticipant(participant.id);
+                }}
+              />
+            </div>
           </div>
 
           {/* Device Controls */}

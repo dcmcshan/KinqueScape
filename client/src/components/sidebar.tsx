@@ -47,9 +47,11 @@ export default function Sidebar() {
       }`}>
         <div className="flex items-center justify-between h-16 px-6 tron-border border-b">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center tron-glow">
-              <Box className="w-5 h-5 text-background" />
-            </div>
+            <img 
+              src="@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png" 
+              alt="KinqueScape Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <span className="text-xl font-bold tron-text">KinqueScape</span>
           </div>
           <button 
