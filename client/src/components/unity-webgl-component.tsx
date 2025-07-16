@@ -157,6 +157,14 @@ export default function UnityWebGLComponent({
       }
     };
   }, [loadUnityBuild]);
+
+  // Load custom GLB model when Unity is ready
+  useEffect(() => {
+    if (isInitialized) {
+      console.log('Unity WebGL: Loading custom GLB model...');
+      sendToUnity('SceneController', 'LoadCustomModel', '/unity-build/7_16_2025.glb');
+    }
+  }, [isInitialized, sendToUnity]);
   
   // Update Unity with device data
   useEffect(() => {

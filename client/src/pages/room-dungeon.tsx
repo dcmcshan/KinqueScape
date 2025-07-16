@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import UnityWebGLComponent from "@/components/unity-webgl-component";
 import Minimap2D from "@/components/minimap-2d";
+import ThreeJS3DViewer from "@/components/threejs-3d-viewer";
 import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
 
 export default function RoomDungeonPage() {
@@ -177,9 +178,10 @@ export default function RoomDungeonPage() {
         {/* 3D Room Visualization */}
         <div className="lg:col-span-2">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-            {/* Unity 3D Viewer */}
+            {/* Your Custom 3D Space Viewer */}
             <div className="xl:col-span-2">
-              <UnityWebGLComponent
+              <ThreeJS3DViewer
+                modelPath="/attached_assets/7_16_2025.glb"
                 devices={devices}
                 participants={participants}
                 onDeviceClick={(device) => {
