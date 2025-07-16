@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Bot, User, Loader2, Zap, Copy, Check, Save, FolderOpen } from "lucide-react";
+import { Send, Bot, User, Loader2, Zap, Copy, Check, Save, FolderOpen, Download, FileText } from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -24,7 +24,7 @@ export default function ChatPage() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello! I'm Venice AI, your expert in adult entertainment technology and KinqueScape development. I specialize in creating sophisticated scape rules using our biometric monitoring and smart device automation system.\n\n🧠 **Scape Rules Engine**\nI can help you create rules like:\n• \"If heart rate < 90 bpm, increase vibrator intensity\"\n• \"When stress level > 80, send safety alert\"\n• \"On zone entry, trigger lighting and audio effects\"\n\n📊 **Available Triggers & Actions**\n• Biometric data (heart rate, HRV, stress)\n• Device status and control\n• Participant positioning\n• Time-based conditions\n• Complex combinations\n\nWhat kind of scape rule would you like to develop?",
+      content: "Hello! I'm Venice AI. I can help with general questions and if you need a 'scape rule, I can output it in the proper format. What can I help you with?",
       timestamp: new Date()
     }
   ]);
@@ -33,6 +33,7 @@ export default function ChatPage() {
   const [totalCost, setTotalCost] = useState(0);
   const [sessionTokens, setSessionTokens] = useState(0);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [savedMessageId, setSavedMessageId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -63,6 +64,7 @@ export default function ChatPage() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputMessage.trim();
     setInputMessage("");
     setIsLoading(true);
 
@@ -74,8 +76,8 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: userMessage.content,
-          conversation_history: messages.slice(-10) // Send last 10 messages for context
+          message: currentInput,
+          conversation_history: messages.slice(-8) // Send last 8 messages for context
         }),
       });
 
@@ -121,6 +123,57 @@ export default function ChatPage() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    }
+  };
+
+  const copyToClipboard = async (text: string, messageId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageId(messageId);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const saveAsFile = async (text: string, messageId: string) => {
+    try {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `venice-ai-response-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setSavedMessageId(messageId);
+      setTimeout(() => setSavedMessageId(null), 2000);
+    } catch (err) {
+      console.error('Failed to save file: ', err);
+    }
+  };
+
+  const saveConversationAsFile = () => {
+    try {
+      const conversationText = messages.map(msg => {
+        const timestamp = msg.timestamp.toLocaleString();
+        const role = msg.role === 'user' ? 'You' : 'Venice AI';
+        return `[${timestamp}] ${role}:\n${msg.content}\n\n`;
+      }).join('');
+
+      const blob = new Blob([conversationText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `venice-ai-conversation-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to save conversation: ', err);
     }
   };
 
@@ -219,8 +272,18 @@ export default function ChatPage() {
         <Card className="h-[600px] flex flex-col tron-border">
           <CardHeader className="flex-shrink-0">
             <div className="flex items-center justify-between">
-              <CardTitle className="tron-text">Chat with Venice AI - Scape Rules Expert</CardTitle>
+              <CardTitle className="tron-text">Chat with Venice AI</CardTitle>
               <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={saveConversationAsFile}
+                  disabled={messages.length <= 1}
+                  className="tron-button"
+                >
+                  <FileText className="w-4 h-4 mr-1" />
+                  Export
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -235,15 +298,7 @@ export default function ChatPage() {
                   ) : (
                     <Save className="w-4 h-4 mr-1" />
                   )}
-                  {saveStatus === 'saved' ? 'Saved!' : 'Save Chat'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={clearChat}
-                  className="tron-button"
-                >
-                  Clear Chat
+                  {saveStatus === 'saved' ? 'Saved!' : 'Save'}
                 </Button>
               </div>
             </div>
@@ -278,18 +333,34 @@ export default function ChatPage() {
                         <p className="text-xs opacity-70">
                           {formatTime(message.timestamp)}
                         </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
-                          onClick={() => copyMessage(message.content, message.id)}
-                        >
-                          {copiedMessageId === message.id ? (
-                            <Check className="w-3 h-3 text-green-500" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
+                        <div className="flex gap-1 absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => copyToClipboard(message.content, message.id)}
+                          >
+                            {copiedMessageId === message.id ? (
+                              <Check className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </Button>
+                          {message.role === 'assistant' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => saveAsFile(message.content, message.id)}
+                            >
+                              {savedMessageId === message.id ? (
+                                <Check className="w-3 h-3 text-green-500" />
+                              ) : (
+                                <Download className="w-3 h-3" />
+                              )}
+                            </Button>
                           )}
-                        </Button>
+                        </div>
                       </div>
                     </div>
 
@@ -339,7 +410,7 @@ export default function ChatPage() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask about escape room design, adult entertainment tech, biometric integration..."
+                  placeholder="Ask anything or request a 'scape rule..."
                   className="flex-1"
                   disabled={isLoading}
                 />
