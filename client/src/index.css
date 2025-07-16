@@ -110,6 +110,20 @@
   animation: tron-pulse 2s ease-in-out infinite;
 }
 
+/* Logo Glow Effect */
+.logo-glow {
+  filter: drop-shadow(0 0 8px hsl(0, 100%, 50%)) 
+          drop-shadow(0 0 16px hsl(0, 100%, 50%)) 
+          drop-shadow(0 0 24px hsl(0, 100%, 50%));
+  transition: filter 0.3s ease;
+}
+
+.logo-glow:hover {
+  filter: drop-shadow(0 0 12px hsl(0, 100%, 50%)) 
+          drop-shadow(0 0 24px hsl(0, 100%, 50%)) 
+          drop-shadow(0 0 36px hsl(0, 100%, 50%));
+}
+
 /* Navigation Styles */
 .nav-item {
   @apply flex items-center space-x-3 px-3 py-2 text-sm font-medium text-muted-foreground rounded-lg hover:bg-muted hover:text-foreground transition-colors;

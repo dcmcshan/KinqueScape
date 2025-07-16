@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home, Shield } from "lucide-react";
-const logoPath = "/logo.svg";
+import logoPath from "@assets/C40089C9-F4D0-4D4E-8056-BC35F95B05D3_1752696036206.png";
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -51,7 +51,7 @@ export default function Sidebar() {
             <img 
               src={logoPath} 
               alt="KinqueScape Logo" 
-              className="w-8 h-8 object-contain"
+              className="w-8 h-8 object-contain logo-glow"
             />
             <span className="text-xl font-bold tron-text">KinqueScape</span>
           </div>

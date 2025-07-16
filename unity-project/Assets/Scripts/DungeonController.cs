@@ -573,41 +573,33 @@ public class DungeonController : MonoBehaviour
         Debug.Log("Unity: GLB Loader component added for 3D mesh rendering");
     }
     
-    public void LoadProcessedMesh(string meshDataJson)
+    public void CreateTestObject(string testType)
     {
-        // Create immediate indicator to show function is called
-        GameObject callIndicator = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        callIndicator.name = "LoadProcessedMeshCalled";
-        callIndicator.transform.position = new Vector3(5, 5, 0);
-        callIndicator.transform.localScale = Vector3.one * 3f;
-        callIndicator.GetComponent<Renderer>().material.color = Color.yellow;
+        Debug.Log("Unity: CreateTestObject called with: " + testType);
         
-        SendMessageToReact("{\"type\":\"debug\",\"message\":\"LoadProcessedMesh called with " + meshDataJson.Length + " chars\"}");
+        // Create bright test object that's easy to see
+        GameObject testObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        testObj.name = "CommunicationTest_" + testType;
+        testObj.transform.position = new Vector3(0, 12, 0);
+        testObj.transform.localScale = Vector3.one * 6f;
+        testObj.GetComponent<Renderer>().material.color = Color.red;
         
-        // Create simple test mesh instead of parsing complex JSON
-        GameObject testMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        testMesh.name = "ProcessedMeshTest";
-        testMesh.transform.position = new Vector3(0, 3, 0);
-        testMesh.transform.localScale = Vector3.one * 4f;
-        testMesh.GetComponent<Renderer>().material.color = Color.green;
+        Debug.Log("Unity: Created red test sphere at (0, 12, 0)");
+    }
+    
+    public void LoadMeshInfo(string meshInfoJson)
+    {
+        Debug.Log("Unity: LoadMeshInfo called");
         
-        SendMessageToReact("{\"type\":\"debug\",\"message\":\"Created test mesh cube\"}");
+        // Create indicator that mesh info was received
+        GameObject meshIndicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        meshIndicator.name = "MeshInfoReceived";
+        meshIndicator.transform.position = new Vector3(8, 12, 0);
+        meshIndicator.transform.localScale = Vector3.one * 6f;
+        meshIndicator.GetComponent<Renderer>().material.color = Color.green;
         
-        // Clear existing static room
-        GameObject staticRoom = GameObject.Find("StaticDungeonRoom");
-        if (staticRoom != null)
-        {
-            DestroyImmediate(staticRoom);
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Removed static room\"}");
-        }
-        
-        // Position camera to see test objects
-        if (mainCamera != null)
-        {
-            mainCamera.transform.position = new Vector3(0, 10, 15);
-            mainCamera.transform.LookAt(new Vector3(0, 3, 0));
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Camera positioned to view test objects\"}");
-        }
+        Debug.Log("Unity: Created green cube - mesh info received");
+        Debug.Log("Unity: Mesh info data: " + meshInfoJson);
     }
     
     public void GLBLoadSuccess(string message)

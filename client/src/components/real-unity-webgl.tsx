@@ -149,40 +149,38 @@ export default function RealUnityWebGL({
           // Initialize enhanced 3D scene and load processed mesh data
           setTimeout(() => {
             try {
-              // Test Unity communication first
-              console.log('Unity WebGL: Testing Unity message system');
+              // Create a simple test directly in Unity to verify communication
+              console.log('Unity WebGL: Creating communication test indicator');
               try {
-                instance.SendMessage('DungeonController', 'LoadProcessedMesh', 'test');
-                console.log('Unity WebGL: Test message sent successfully');
+                // Call a simple function that should create a visible object
+                instance.SendMessage('DungeonController', 'CreateTestObject', 'communication_test');
+                console.log('Unity WebGL: Test object creation message sent');
               } catch (error) {
-                console.error('Unity WebGL: Test message failed:', error);
+                console.error('Unity WebGL: Test object creation failed:', error);
               }
               
-              // Now try to load processed mesh data
-              console.log('Unity WebGL: Fetching processed mesh data from server');
+              // Load actual mesh data with simpler approach
+              console.log('Unity WebGL: Loading real GLB mesh data');
               fetch('/api/glb-mesh')
-                .then(response => {
-                  console.log('Unity WebGL: Mesh API response status:', response.status);
-                  return response.json();
-                })
+                .then(response => response.json())
                 .then(meshData => {
-                  console.log('Unity WebGL: Received mesh data:', meshData.meshes.length, 'meshes');
-                  console.log('Unity WebGL: Bounding box:', meshData.boundingBox);
-                  console.log('Unity WebGL: Creating actual 3D room from processed mesh vertices');
+                  console.log('Unity WebGL: Received', meshData.meshes.length, 'meshes from server');
                   
-                  // Send processed mesh data to Unity
+                  // Try to send a simplified version
+                  const simplifiedData = {
+                    meshCount: meshData.meshes.length,
+                    boundingBox: meshData.boundingBox
+                  };
+                  
                   try {
-                    instance.SendMessage('DungeonController', 'LoadProcessedMesh', JSON.stringify(meshData));
-                    console.log('Unity WebGL: Mesh data sent to Unity successfully');
+                    instance.SendMessage('DungeonController', 'LoadMeshInfo', JSON.stringify(simplifiedData));
+                    console.log('Unity WebGL: Simplified mesh info sent to Unity');
                   } catch (error) {
-                    console.error('Unity WebGL: Failed to send mesh data to Unity:', error);
+                    console.error('Unity WebGL: Failed to send mesh info:', error);
                   }
                 })
                 .catch(error => {
-                  console.error('Unity WebGL: Mesh data loading failed:', error);
-                  // Fallback to GLB file loading
-                  console.log('Unity WebGL: Falling back to GLB file loading');
-                  instance.SendMessage('DungeonController', 'LoadGLBModel', '/unity-build/7_16_2025.glb');
+                  console.error('Unity WebGL: Failed to load mesh data:', error);
                 });
               
               // Also load the actual GLB file in Unity 3D with enhanced settings
