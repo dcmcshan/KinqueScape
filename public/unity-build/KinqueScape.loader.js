@@ -136,9 +136,12 @@
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw dungeon floor grid
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
+    // Draw room walls from GLB mesh bounds
+    drawRoomWalls(ctx, canvas.width, canvas.height);
+    
+    // Draw subtle dungeon floor grid
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 0.5;
     
     var gridSize = 40;
     for (var x = 0; x < canvas.width; x += gridSize) {
@@ -286,6 +289,74 @@
     ctx.fillText(device.name, x, y + 25);
   }
   
+  function drawRoomWalls(ctx, canvasWidth, canvasHeight) {
+    if (!roomBounds) return;
+    
+    // Calculate wall coordinates from room bounds
+    var padding = 0.1; // 10% padding
+    var roomWidth = roomBounds.maxX - roomBounds.minX;
+    var roomDepth = roomBounds.maxZ - roomBounds.minZ;
+    
+    var leftWall = canvasWidth * padding;
+    var rightWall = canvasWidth * (1 - padding);
+    var topWall = canvasHeight * padding;
+    var bottomWall = canvasHeight * (1 - padding);
+    
+    // Draw outer stone walls with shadow effect
+    ctx.strokeStyle = '#666';
+    ctx.fillStyle = '#333';
+    ctx.lineWidth = 8;
+    
+    // Top wall
+    ctx.fillRect(leftWall - 4, topWall - 4, rightWall - leftWall + 8, 8);
+    ctx.strokeRect(leftWall - 4, topWall - 4, rightWall - leftWall + 8, 8);
+    
+    // Bottom wall  
+    ctx.fillRect(leftWall - 4, bottomWall - 4, rightWall - leftWall + 8, 8);
+    ctx.strokeRect(leftWall - 4, bottomWall - 4, rightWall - leftWall + 8, 8);
+    
+    // Left wall
+    ctx.fillRect(leftWall - 4, topWall - 4, 8, bottomWall - topWall + 8);
+    ctx.strokeRect(leftWall - 4, topWall - 4, 8, bottomWall - topWall + 8);
+    
+    // Right wall
+    ctx.fillRect(rightWall - 4, topWall - 4, 8, bottomWall - topWall + 8);
+    ctx.strokeRect(rightWall - 4, topWall - 4, 8, bottomWall - topWall + 8);
+    
+    // Add stone texture details
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    for (var i = leftWall; i < rightWall; i += 60) {
+      // Top wall stones
+      ctx.beginPath();
+      ctx.moveTo(i, topWall - 4);
+      ctx.lineTo(i, topWall + 4);
+      ctx.stroke();
+      
+      // Bottom wall stones
+      ctx.beginPath();
+      ctx.moveTo(i, bottomWall - 4);
+      ctx.lineTo(i, bottomWall + 4);
+      ctx.stroke();
+    }
+    
+    for (var j = topWall; j < bottomWall; j += 60) {
+      // Left wall stones
+      ctx.beginPath();
+      ctx.moveTo(leftWall - 4, j);
+      ctx.lineTo(leftWall + 4, j);
+      ctx.stroke();
+      
+      // Right wall stones  
+      ctx.beginPath();
+      ctx.moveTo(rightWall - 4, j);
+      ctx.lineTo(rightWall + 4, j);
+      ctx.stroke();
+    }
+    
+    console.log('Unity: Drew room walls for', roomWidth.toFixed(1) + 'x' + roomDepth.toFixed(1), 'space');
+  }
+
   function drawParticipant(ctx, participant, canvasWidth, canvasHeight) {
     var x = (participant.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
     var y = (participant.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
