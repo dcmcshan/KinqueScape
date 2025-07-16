@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X } from "lucide-react";
+import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -61,6 +61,12 @@ export default function Sidebar() {
         
         <nav className="mt-6 px-3">
           <div className="space-y-1">
+            <Link href="/">
+              <div className={`nav-item ${isActive("/") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
+                <Home className="w-5 h-5" />
+                <span>Home</span>
+              </div>
+            </Link>
             <Link href="/design">
               <div className={`nav-item ${isActive("/design") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
                 <DraftingCompass className="w-5 h-5" />
@@ -73,32 +79,30 @@ export default function Sidebar() {
                 <span>Business Plan</span>
               </div>
             </Link>
-            <a href="#" className="nav-item">
-              <BellRing className="w-5 h-5" />
-              <span>Marketing</span>
-            </a>
-            <a href="#" className="nav-item">
-              <BarChart3 className="w-5 h-5" />
-              <span>Analytics</span>
-            </a>
+            <Link href="/dash">
+              <div className={`nav-item ${isActive("/dash") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
+                <BarChart3 className="w-5 h-5" />
+                <span>Live Dashboard</span>
+              </div>
+            </Link>
           </div>
           
           <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="px-3 mb-3">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent Projects</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent 'Scapes</h3>
             </div>
             <div className="space-y-1">
               <a href="#" className="project-item">
                 <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                <span>Haunted Mansion</span>
+                <span>Haunted Mansion 'Scape</span>
               </a>
               <a href="#" className="project-item">
                 <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                <span>Space Station Escape</span>
+                <span>Space Station 'Scape</span>
               </a>
               <a href="#" className="project-item">
                 <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                <span>Detective Mystery</span>
+                <span>Detective Mystery 'Scape</span>
               </a>
             </div>
           </div>
