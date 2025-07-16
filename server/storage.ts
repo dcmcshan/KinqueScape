@@ -106,7 +106,7 @@ export class MemStorage implements IStorage {
       designId: null,
       masterId: 1,
       status: "waiting",
-      modelPath: "/assets/7_16_2025.glb",
+      modelPath: "/unity-build/7_16_2025.glb",
       unityBuildPath: "/unity/dungeon",
       maxParticipants: 6,
       currentParticipants: 0,

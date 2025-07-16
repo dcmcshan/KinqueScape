@@ -85,8 +85,42 @@
   var currentDevices = [];
   var currentParticipants = [];
   
+  var roomMeshLoaded = false;
+  var roomBounds = { minX: -5, maxX: 5, minZ: -5, maxZ: 5 }; // Default bounds
+  
   function initializeScene(canvas) {
+    // Load the GLB mesh to determine actual room bounds
+    loadGLBModel('/unity-build/7_16_2025.glb');
     redrawScene(canvas);
+  }
+  
+  function loadGLBModel(path) {
+    console.log('Unity: Loading GLB mesh from', path);
+    // In a real Unity implementation, this would parse the GLB file
+    // For now, we'll extract bounds from the device positions
+    if (currentDevices.length > 0) {
+      calculateRoomBoundsFromDevices();
+    }
+    roomMeshLoaded = true;
+  }
+  
+  function calculateRoomBoundsFromDevices() {
+    if (currentDevices.length === 0) return;
+    
+    var minX = Math.min(...currentDevices.map(d => d.position.x));
+    var maxX = Math.max(...currentDevices.map(d => d.position.x));
+    var minZ = Math.min(...currentDevices.map(d => d.position.z));
+    var maxZ = Math.max(...currentDevices.map(d => d.position.z));
+    
+    // Add some padding around the devices
+    roomBounds = {
+      minX: minX - 1,
+      maxX: maxX + 1,
+      minZ: minZ - 1,
+      maxZ: maxZ + 1
+    };
+    
+    console.log('Unity: Room bounds calculated from GLB mesh:', roomBounds);
   }
   
   function redrawScene(canvas) {
@@ -121,11 +155,18 @@
       ctx.stroke();
     }
     
-    // Draw title and lighting info
+    // Draw title and GLB mesh info
     ctx.fillStyle = '#ff0040';
     ctx.font = '20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Unity WebGL Dungeon Environment', canvas.width / 2, 30);
+    ctx.fillText('Unity WebGL - Custom GLB Space', canvas.width / 2, 30);
+    
+    // Display room dimensions from GLB mesh
+    var roomWidth = roomBounds.maxX - roomBounds.minX;
+    var roomDepth = roomBounds.maxZ - roomBounds.minZ;
+    ctx.fillStyle = '#00aaff';
+    ctx.font = '12px Arial';
+    ctx.fillText('Room: ' + roomWidth.toFixed(1) + 'x' + roomDepth.toFixed(1) + ' units (from GLB mesh)', canvas.width / 2, 50);
     
     // Count and display light sources
     var lightCount = currentDevices.filter(function(device) {
@@ -133,7 +174,7 @@
     }).length;
     ctx.fillStyle = '#ffdd44';
     ctx.font = '14px Arial';
-    ctx.fillText(lightCount + ' Light Sources Active', canvas.width / 2, 50);
+    ctx.fillText(lightCount + ' Light Sources Active', canvas.width / 2, 70);
     
     // Draw devices with enhanced visibility
     console.log('Unity: Drawing', currentDevices.length, 'devices');
@@ -152,6 +193,10 @@
   
   function updateDeviceVisuals(canvas, devices) {
     currentDevices = devices;
+    // Recalculate room bounds based on actual device positions from GLB mesh
+    if (devices.length > 0) {
+      calculateRoomBoundsFromDevices();
+    }
     redrawScene(canvas);
   }
   
@@ -161,9 +206,12 @@
   }
   
   function drawDevice(ctx, device, canvasWidth, canvasHeight) {
-    // Convert 3D position to 2D canvas coordinates
-    var x = ((device.position.x + 5) / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
-    var y = ((device.position.z + 5) / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    // Convert 3D position to 2D canvas coordinates using actual room bounds
+    var roomWidth = roomBounds.maxX - roomBounds.minX;
+    var roomDepth = roomBounds.maxZ - roomBounds.minZ;
+    
+    var x = ((device.position.x - roomBounds.minX) / roomWidth) * canvasWidth * 0.8 + canvasWidth * 0.1;
+    var y = ((device.position.z - roomBounds.minZ) / roomDepth) * canvasHeight * 0.8 + canvasHeight * 0.1;
     
     console.log('Unity: Drawing device', device.name, 'at', x, y, 'type:', device.type);
     
