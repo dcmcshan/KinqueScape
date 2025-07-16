@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import RealUnityWebGL from "@/components/real-unity-webgl";
-import Minimap2D from "@/components/minimap-2d";
+import SimpleMinimap2D from "@/components/simple-minimap-2d";
 import ThreeJS3DViewer from "@/components/threejs-3d-viewer";
 import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
 
@@ -196,7 +196,7 @@ export default function RoomDungeonPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 2D Mini-Map */}
           <div className="lg:col-span-1">
-            <Minimap2D
+            <SimpleMinimap2D
               devices={devices}
               participants={participants}
               onDeviceClick={(device) => {

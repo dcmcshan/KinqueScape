@@ -68,8 +68,10 @@ window.UnityFramework = {
       handleGLBLoad: function(filePath) {
         console.log('Unity Framework: Loading ACTUAL GLB model from', filePath);
         console.log('Unity Framework: Processing user uploaded 3D mesh geometry');
+        console.log('Unity Framework: Triggering real GLB file loading and parsing');
         
-        // Load the actual GLB file
+        // Load the actual GLB file with real parsing
+        console.log('Unity Framework: Starting actual GLB file loading process');
         this.loadGLBFile(filePath);
       },
       
@@ -80,16 +82,20 @@ window.UnityFramework = {
         fetch(filePath)
           .then(response => {
             if (!response.ok) {
-              throw new Error('GLB file not found');
+              throw new Error('GLB file not found: ' + response.status);
             }
+            console.log('Unity GLB: GLB file fetch successful, response size:', response.headers.get('content-length') || 'unknown');
             return response.arrayBuffer();
           })
           .then(buffer => {
             console.log('Unity GLB: Successfully loaded GLB file (' + buffer.byteLength + ' bytes)');
+            console.log('Unity GLB: Starting real GLB binary parsing...');
+            console.log('Unity GLB: Processing', buffer.byteLength, 'bytes of 3D mesh data');
             self.parseGLBFile(buffer);
           })
           .catch(error => {
-            console.log('Unity GLB: Failed to load GLB file, creating enhanced architectural representation');
+            console.error('Unity GLB: Failed to load GLB file:', error);
+            console.log('Unity GLB: Creating enhanced architectural representation as fallback');
             self.createEnhancedArchitecturalRoom();
           });
       },

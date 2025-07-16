@@ -132,6 +132,20 @@ export default function RealUnityWebGL({
               instance.SendMessage('DungeonController', 'LoadGLBModel', '/unity-build/7_16_2025.glb');
               console.log('Unity WebGL: Loading real GLB model in 3D space');
               
+              // Also trigger direct GLB loading through the framework
+              if (instance.handleGLBLoad) {
+                console.log('Unity WebGL: Triggering framework GLB loading');
+                instance.handleGLBLoad('/unity-build/7_16_2025.glb');
+              }
+              
+              // Direct call to the GLB loading functions
+              setTimeout(() => {
+                if (window.unityInstance && window.unityInstance.loadGLBFile) {
+                  console.log('Unity WebGL: Direct GLB file loading trigger');
+                  window.unityInstance.loadGLBFile('/unity-build/7_16_2025.glb');
+                }
+              }, 2000);
+              
               // Set up enhanced 3D camera for architectural view
               instance.SendMessage('DungeonController', 'SetCameraMode', 'architectural');
               console.log('Unity WebGL: Set architectural 3D camera view');

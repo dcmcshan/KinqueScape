@@ -30,138 +30,155 @@ export default function Minimap2D({
     canvas.width = 300;
     canvas.height = 300;
 
-    // Clear canvas with dark background
-    ctx.fillStyle = '#0a0a0a';
+    // Clear canvas with light background like the reference image
+    ctx.fillStyle = '#f5f5f5';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw grid
+    // Draw room walls (top-down architectural view)
+    const roomMargin = 30;
+    const roomWidth = canvas.width - (roomMargin * 2);
+    const roomHeight = canvas.height - (roomMargin * 2);
+    
+    // Outer walls
     ctx.strokeStyle = '#333';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(roomMargin, roomMargin, roomWidth, roomHeight);
+    
+    // Inner room area
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(roomMargin + 2, roomMargin + 2, roomWidth - 4, roomHeight - 4);
+    
+    // Inner walls
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(roomMargin + 20, roomMargin + 20, roomWidth - 40, roomHeight - 40);
+
+    // Door opening at the top (entrance)
+    ctx.fillStyle = '#f5f5f5';
+    const doorWidth = 30;
+    const doorX = (canvas.width - doorWidth) / 2;
+    ctx.fillRect(doorX, roomMargin - 2, doorWidth, 8);
+    
+    // Subtle grid for positioning reference
+    ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 0.5;
     const gridSize = 20;
     
-    for (let x = 0; x < canvas.width; x += gridSize) {
+    for (let x = roomMargin; x <= canvas.width - roomMargin; x += gridSize) {
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
+      ctx.moveTo(x, roomMargin);
+      ctx.lineTo(x, canvas.height - roomMargin);
       ctx.stroke();
     }
     
-    for (let y = 0; y < canvas.height; y += gridSize) {
+    for (let y = roomMargin; y <= canvas.height - roomMargin; y += gridSize) {
       ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
+      ctx.moveTo(roomMargin, y);
+      ctx.lineTo(canvas.width - roomMargin, y);
       ctx.stroke();
     }
 
-    // Draw room boundaries
-    ctx.strokeStyle = '#ff0040';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
     // Title
-    ctx.fillStyle = '#ff0040';
+    ctx.fillStyle = '#333';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Dungeon Layout (Top View)', canvas.width / 2, 15);
+    ctx.fillText('Room Layout (Top View)', canvas.width / 2, 20);
 
-    // Draw devices
+    // Draw devices with architectural symbols
     devices.forEach(device => {
-      const position = device.location || { x: 0, y: 0, z: 0 };
-      // Convert 3D coordinates to 2D minimap (x, z -> x, y in 2D)
-      const x = (position.x / 10) * (canvas.width * 0.6) + canvas.width * 0.2;
-      const y = (position.z / 10) * (canvas.height * 0.6) + canvas.height * 0.2;
+      const position = device.position || { x: 0, y: 0, z: 0 };
+      // Convert 3D coordinates to 2D room coordinates
+      const x = roomMargin + ((position.x + 5) / 10) * roomWidth;
+      const y = roomMargin + ((position.z + 5) / 10) * roomHeight;
 
-      // Device appearance based on type
-      let color = '#00ff00'; // Default green for online
-      let shape = 'circle';
+      // Device appearance with architectural styling
+      let color = '#4CAF50'; // Green for online
+      let symbol = '●';
       
       if (device.status === 'offline') {
-        color = '#ff0000';
+        color = '#f44336'; // Red for offline
       }
       
       switch (device.type) {
         case 'lock':
-          shape = 'square';
-          color = device.status === 'online' ? '#ffa500' : '#ff0000';
+          symbol = '🚪';
+          color = device.status === 'online' ? '#FF9800' : '#f44336';
           break;
         case 'light':
-          color = device.status === 'online' ? '#ffff00' : '#ff0000';
+          symbol = '💡';
+          color = device.status === 'online' ? '#FFC107' : '#f44336';
           break;
         case 'camera':
-          shape = 'triangle';
-          color = device.status === 'online' ? '#00ffff' : '#ff0000';
+          symbol = '📷';
+          color = device.status === 'online' ? '#2196F3' : '#f44336';
+          break;
+        case 'sound':
+          symbol = '🔊';
+          color = device.status === 'online' ? '#9C27B0' : '#f44336';
           break;
         case 'prop':
-          shape = 'diamond';
-          color = device.status === 'online' ? '#8a2be2' : '#ff0000';
+          symbol = '⚔️';
+          color = device.status === 'online' ? '#795548' : '#f44336';
+          break;
+        case 'sensor':
+          symbol = '📡';
+          color = device.status === 'online' ? '#00BCD4' : '#f44336';
+          break;
+        case 'display':
+          symbol = '📺';
+          color = device.status === 'online' ? '#607D8B' : '#f44336';
           break;
       }
 
-      ctx.fillStyle = color;
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 1;
-
-      if (shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-      } else if (shape === 'square') {
-        ctx.fillRect(x - 4, y - 4, 8, 8);
-        ctx.strokeRect(x - 4, y - 4, 8, 8);
-      } else if (shape === 'triangle') {
-        ctx.beginPath();
-        ctx.moveTo(x, y - 4);
-        ctx.lineTo(x - 4, y + 4);
-        ctx.lineTo(x + 4, y + 4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      } else if (shape === 'diamond') {
-        ctx.beginPath();
-        ctx.moveTo(x, y - 4);
-        ctx.lineTo(x + 4, y);
-        ctx.lineTo(x, y + 4);
-        ctx.lineTo(x - 4, y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-    });
-
-    // Draw participants
-    participants.forEach(participant => {
-      const x = ((participant.positionX || 0) / 10) * (canvas.width * 0.6) + canvas.width * 0.2;
-      const y = ((participant.positionZ || 0) / 10) * (canvas.height * 0.6) + canvas.height * 0.2;
-      
-      // Participant with pulsing effect if active
-      const alpha = participant.isActive ? (Math.sin(Date.now() / 500) * 0.3 + 0.7) : 0.5;
-      
-      ctx.fillStyle = `rgba(0, 153, 255, ${alpha})`;
-      ctx.strokeStyle = '#fff';
+      // Draw device background circle
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = color;
       ctx.lineWidth = 2;
-
-      // Draw participant as person icon
-      // Head
       ctx.beginPath();
-      ctx.arc(x, y - 6, 3, 0, 2 * Math.PI);
+      ctx.arc(x, y, 8, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
 
-      // Body
-      ctx.fillRect(x - 2, y - 3, 4, 8);
-      ctx.strokeRect(x - 2, y - 3, 4, 8);
+      // Draw device symbol
+      ctx.fillStyle = color;
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(symbol, x, y);
+    });
 
-      // Arms
-      ctx.fillRect(x - 5, y - 1, 3, 2);
-      ctx.fillRect(x + 2, y - 1, 3, 2);
+    // Draw participants with architectural person symbols
+    participants.forEach(participant => {
+      const position = participant.position || { x: 0, y: 0, z: 0 };
+      const x = roomMargin + ((position.x + 5) / 10) * roomWidth;
+      const y = roomMargin + ((position.z + 5) / 10) * roomHeight;
+      
+      // Participant with pulsing effect if active
+      const alpha = participant.isActive ? (Math.sin(Date.now() / 500) * 0.3 + 0.7) : 0.8;
+      
+      // Draw participant background
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = `rgba(76, 175, 80, ${alpha})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, 10, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+
+      // Draw person symbol
+      ctx.fillStyle = `rgba(76, 175, 80, ${alpha})`;
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('👤', x, y);
 
       // Name label
-      if (participant.participantName) {
-        ctx.fillStyle = '#fff';
-        ctx.font = '8px Arial';
+      if (participant.name) {
+        ctx.fillStyle = '#333';
+        ctx.font = '10px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(participant.participantName, x, y + 12);
+        ctx.textBaseline = 'top';
+        ctx.fillText(participant.name, x, y + 12);
       }
     });
 
@@ -229,7 +246,7 @@ export default function Minimap2D({
 
     // Check device clicks
     devices.forEach(device => {
-      const position = device.location || { x: 0, y: 0, z: 0 };
+      const position = device.position || { x: 0, y: 0, z: 0 };
       const deviceX = (position.x / 10) * (canvas.width * 0.6) + canvas.width * 0.2;
       const deviceY = (position.z / 10) * (canvas.height * 0.6) + canvas.height * 0.2;
 
@@ -241,8 +258,9 @@ export default function Minimap2D({
 
     // Check participant clicks
     participants.forEach(participant => {
-      const participantX = ((participant.positionX || 0) / 10) * (canvas.width * 0.6) + canvas.width * 0.2;
-      const participantY = ((participant.positionZ || 0) / 10) * (canvas.height * 0.6) + canvas.height * 0.2;
+      const position = participant.position || { x: 0, y: 0, z: 0 };
+      const participantX = (position.x / 10) * (canvas.width * 0.6) + canvas.width * 0.2;
+      const participantY = (position.z / 10) * (canvas.height * 0.6) + canvas.height * 0.2;
 
       const distance = Math.sqrt(Math.pow(x - participantX, 2) + Math.pow(y - participantY, 2));
       if (distance < 12) {
