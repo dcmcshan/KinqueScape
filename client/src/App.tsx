@@ -8,16 +8,18 @@ import HomePage from "@/pages/home";
 import DesignPage from "@/pages/design";
 import PlanPage from "@/pages/plan";
 import DashboardPage from "@/pages/dashboard";
+import RoomDungeonPage from "@/pages/room-dungeon";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/design" component={() => <AppLayout><DesignPage /></AppLayout>} />
         <Route path="/plan" component={() => <AppLayout><PlanPage /></AppLayout>} />
         <Route path="/dash" component={() => <AppLayout><DashboardPage /></AppLayout>} />
+        <Route path="/room/dungeon" component={() => <AppLayout><RoomDungeonPage /></AppLayout>} />
         <Route component={NotFound} />
       </Switch>
     </div>
@@ -26,7 +28,7 @@ function Router() {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-background">
       <Sidebar />
       <div className="flex-1 lg:ml-0">
         {children}

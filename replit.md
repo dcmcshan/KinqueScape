@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack escape room design and business planning application built with React, Express, TypeScript, and PostgreSQL. The application allows users to create escape room designs with interactive canvas tools and develop comprehensive business plans for escape room ventures.
+KinqueScape is a comprehensive web platform for designing, running, and marketing escape rooms with real-time room control and biometric monitoring. The platform features a marketing homepage, design tools (/design), business plan display (/plan), interactive dashboard (/dash), and Unity-based room control (/room/dungeon) with participant tracking via AmazFit Active 2 watches. Current focus is on creating a demo installation for a dungeon room while planning future franchising and DIY expansion.
 
 ## User Preferences
 
@@ -28,18 +28,30 @@ Preferred communication style: Simple, everyday language.
 ### Key Components
 
 #### Database Schema
-- **Users**: Basic user authentication with username/password
+- **Users**: Multi-role user system (admin, designer, master, participant, voyeur) with authentication
 - **Escape Room Designs**: Canvas layouts, puzzles, props, atmosphere settings stored as JSONB
 - **Business Plans**: Financial projections, marketing strategies, operations data stored as JSONB
+- **Rooms**: Room management with status tracking, participant capacity, and 3D model paths
+- **Room Participants**: Participant tracking with positioning, watch IDs, and session data
+- **Room Devices**: IoT device management for lights, locks, cameras, sensors, and displays
+- **Biometric Data**: Real-time heart rate, HRV, positioning, and battery data from AmazFit Active 2 watches
+- **Room Events**: Event logging for room activities and participant interactions
 
 #### Frontend Pages
+- **Home Page**: Marketing homepage with KinqueScape branding and Tron-style dark theme
 - **Design Page**: Interactive canvas for creating escape room layouts with drag-and-drop tools
-- **Business Plan Page**: Multi-section forms for creating comprehensive business plans
-- **Responsive Sidebar**: Navigation between design and planning tools
+- **Plan Page**: Displays the actual KinqueScape business plan focused on dungeon demo installation
+- **Dashboard Page**: Interactive dashboard for monitoring room statistics and participant data
+- **Room Control Page**: Unity-based 3D room visualization with real-time biometric monitoring
+- **Responsive Sidebar**: Navigation between all platform tools
 
 #### API Endpoints
 - `GET/POST /api/designs` - Escape room design CRUD operations
 - `GET/POST /api/plans` - Business plan CRUD operations
+- `GET/POST /api/rooms` - Room management and control
+- `GET/POST /api/rooms/:id/participants` - Participant tracking
+- `GET/POST /api/rooms/:id/devices` - IoT device control
+- `GET/POST /api/rooms/:id/biometrics` - Biometric data collection
 - All endpoints use userId=1 for demo purposes (no authentication implemented)
 
 ## Data Flow
@@ -76,9 +88,24 @@ Preferred communication style: Simple, everyday language.
 - **Production**: Compiled JavaScript with NODE_ENV=production
 - **Database**: Requires DATABASE_URL environment variable for PostgreSQL connection
 
-### Current Limitations
-- No user authentication system (uses hardcoded userId=1)
-- In-memory storage for demo - requires database setup for persistence
-- No deployment configuration for production hosting
+### Current Implementation Status
+- **Completed**: Dark theme with red Tron-style accents across all pages
+- **Completed**: Comprehensive biometric monitoring infrastructure for AmazFit Active 2 watches
+- **Completed**: Room management system with Unity-based 3D visualization
+- **Completed**: Business plan page displaying actual KinqueScape strategy focused on dungeon demo
+- **Completed**: Multi-role user system with authentication and permissions
+- **Completed**: In-memory storage with comprehensive database schema for future PostgreSQL migration
+- **In Progress**: Demo dungeon room installation planning and validation
 
+### Architecture Focus
 The application follows a clean architecture pattern with clear separation between presentation, business logic, and data layers. The shared schema approach ensures type safety across the full stack while the modular component structure supports easy feature additions and modifications.
+
+### Demo Installation Strategy
+Primary focus is on creating a comprehensive dungeon-themed demo installation that showcases:
+- Real-time biometric monitoring with AmazFit Active 2 watches
+- Unity 3D room visualization and control
+- Participant stress level monitoring and safety protocols
+- Dynamic puzzle difficulty adjustment based on biometric feedback
+- Future expansion through franchising and DIY installation packages
+
+The demo serves as proof-of-concept for the broader KinqueScape platform, demonstrating the technology's potential to revolutionize escape room experiences through data-driven insights and immersive environments.

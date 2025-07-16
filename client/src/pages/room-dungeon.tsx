@@ -1,0 +1,347 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { 
+  Activity, 
+  Heart, 
+  Users, 
+  Play, 
+  Pause, 
+  Square, 
+  Settings, 
+  Eye,
+  Zap,
+  Shield,
+  MapPin,
+  Clock,
+  Battery
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/queryClient";
+import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
+
+export default function RoomDungeonPage() {
+  const [roomStatus, setRoomStatus] = useState<"waiting" | "active" | "paused" | "completed">("waiting");
+  const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null);
+
+  // Fetch room data
+  const { data: room } = useQuery<Room>({
+    queryKey: ["/api/rooms/dungeon"],
+    refetchInterval: 5000,
+  });
+
+  const { data: participants = [] } = useQuery<RoomParticipant[]>({
+    queryKey: ["/api/rooms", room?.id, "participants"],
+    enabled: !!room?.id,
+    refetchInterval: 2000,
+  });
+
+  const { data: devices = [] } = useQuery<RoomDevice[]>({
+    queryKey: ["/api/rooms", room?.id, "devices"],
+    enabled: !!room?.id,
+    refetchInterval: 3000,
+  });
+
+  const { data: biometrics = [] } = useQuery<BiometricData[]>({
+    queryKey: ["/api/rooms", room?.id, "biometrics"],
+    enabled: !!room?.id,
+    refetchInterval: 1000,
+  });
+
+  // Device control mutation
+  const controlDeviceMutation = useMutation({
+    mutationFn: async ({ deviceId, status, properties }: { deviceId: number, status: string, properties?: any }) => {
+      const response = await apiRequest("PUT", `/api/rooms/${room?.id}/devices/${deviceId}`, {
+        status,
+        properties,
+      });
+      return response.json();
+    },
+  });
+
+  const getParticipantBiometrics = (participantId: number) => {
+    return biometrics
+      .filter(b => b.participantId === participantId)
+      .sort((a, b) => new Date(b.timestamp!).getTime() - new Date(a.timestamp!).getTime())[0];
+  };
+
+  const getStressLevel = (heartRate?: number, hrv?: number) => {
+    if (!heartRate) return "unknown";
+    if (heartRate > 120 || (hrv && hrv < 20)) return "high";
+    if (heartRate > 90 || (hrv && hrv < 30)) return "medium";
+    return "low";
+  };
+
+  const getDeviceIcon = (type: string) => {
+    switch (type) {
+      case "light": return <Zap className="w-4 h-4" />;
+      case "lock": return <Shield className="w-4 h-4" />;
+      case "camera": return <Eye className="w-4 h-4" />;
+      case "sound": return <Activity className="w-4 h-4" />;
+      default: return <Settings className="w-4 h-4" />;
+    }
+  };
+
+  if (!room) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="tron-pulse">
+            <Activity className="w-12 h-12 text-accent mx-auto mb-4" />
+          </div>
+          <h2 className="text-xl font-semibold tron-text mb-2">Initializing Dungeon</h2>
+          <p className="text-muted-foreground">Loading room systems...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tron-text">{room.name}</h1>
+            <p className="text-muted-foreground">Unity 3D Room Control & Biometric Monitoring</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Badge variant={roomStatus === "active" ? "default" : "secondary"}>
+              {roomStatus.toUpperCase()}
+            </Badge>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRoomStatus("active")}
+                disabled={roomStatus === "active"}
+                className="tron-button"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRoomStatus("paused")}
+                disabled={roomStatus !== "active"}
+                className="tron-button"
+              >
+                <Pause className="w-4 h-4 mr-2" />
+                Pause
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRoomStatus("completed")}
+                className="tron-button"
+              >
+                <Square className="w-4 h-4 mr-2" />
+                End
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 3D Room Visualization */}
+        <div className="lg:col-span-2">
+          <Card className="tron-card h-96 mb-6">
+            <CardHeader>
+              <CardTitle className="text-accent">3D Room Visualization</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-red-800/20"></div>
+                <div className="relative text-center">
+                  <div className="w-16 h-16 border-2 border-accent rounded-full flex items-center justify-center mb-4 mx-auto tron-glow">
+                    <MapPin className="w-8 h-8 text-accent" />
+                  </div>
+                  <h3 className="text-lg font-semibold tron-text mb-2">Unity WebGL Viewer</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Interactive 3D dungeon environment with real-time participant tracking
+                  </p>
+                  <div className="mt-4 text-xs text-muted-foreground">
+                    Model: {room.modelPath || "dungeon_demo.glb"}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Device Controls */}
+          <Card className="tron-card">
+            <CardHeader>
+              <CardTitle className="text-accent">Device Controls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {devices.map((device) => (
+                  <div
+                    key={device.id}
+                    className="tron-card p-4 rounded-lg text-center"
+                  >
+                    <div className="flex items-center justify-center mb-2">
+                      {getDeviceIcon(device.type)}
+                    </div>
+                    <h4 className="font-medium text-sm mb-1">{device.name}</h4>
+                    <Badge
+                      variant={device.status === "online" ? "default" : "secondary"}
+                      className="text-xs mb-2"
+                    >
+                      {device.status}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full tron-button text-xs"
+                      onClick={() => controlDeviceMutation.mutate({
+                        deviceId: device.id,
+                        status: device.status === "online" ? "offline" : "online",
+                      })}
+                    >
+                      Toggle
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Participant Monitoring */}
+        <div className="space-y-6">
+          <Card className="tron-card">
+            <CardHeader>
+              <CardTitle className="text-accent flex items-center">
+                <Users className="w-5 h-5 mr-2" />
+                Participants ({participants.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {participants.map((participant) => {
+                  const biometric = getParticipantBiometrics(participant.id);
+                  const stressLevel = getStressLevel(biometric?.heartRate || undefined, biometric?.hrv || undefined);
+                  
+                  return (
+                    <div
+                      key={participant.id}
+                      className={`tron-card p-3 rounded-lg cursor-pointer transition-all ${
+                        selectedParticipant === participant.id ? 'tron-glow' : ''
+                      }`}
+                      onClick={() => setSelectedParticipant(
+                        selectedParticipant === participant.id ? null : participant.id
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-sm">{participant.participantName}</span>
+                        <Badge
+                          variant={stressLevel === "high" ? "destructive" : stressLevel === "medium" ? "secondary" : "default"}
+                          className="text-xs"
+                        >
+                          {stressLevel}
+                        </Badge>
+                      </div>
+                      
+                      {biometric && (
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center">
+                            <Heart className="w-3 h-3 mr-1 text-red-500" />
+                            <span>{biometric.heartRate || "--"} BPM</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Activity className="w-3 h-3 mr-1 text-blue-500" />
+                            <span>{biometric.hrv || "--"} ms</span>
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin className="w-3 h-3 mr-1 text-green-500" />
+                            <span>({participant.positionX}, {participant.positionY})</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Battery className="w-3 h-3 mr-1 text-yellow-500" />
+                            <span>{biometric.batteryLevel || "--"}%</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {participant.watchId && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Watch: {participant.watchId}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                
+                {participants.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No participants in room</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Room Stats */}
+          <Card className="tron-card">
+            <CardHeader>
+              <CardTitle className="text-accent">Room Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Capacity</span>
+                  <span className="font-medium">{participants.length}/{room.maxParticipants}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Average HR</span>
+                  <span className="font-medium">
+                    {biometrics.length > 0 
+                      ? Math.round(biometrics.reduce((sum, b) => sum + (b.heartRate || 0), 0) / biometrics.length)
+                      : "--"} BPM
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Session Time</span>
+                  <span className="font-medium flex items-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    {roomStatus === "active" ? "15:42" : "00:00"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Devices Online</span>
+                  <span className="font-medium">
+                    {devices.filter(d => d.status === "online").length}/{devices.length}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Emergency Controls */}
+          <Card className="tron-card">
+            <CardHeader>
+              <CardTitle className="text-destructive">Emergency Controls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Button variant="destructive" size="sm" className="w-full">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Emergency Stop
+                </Button>
+                <Button variant="outline" size="sm" className="w-full">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Security Override
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

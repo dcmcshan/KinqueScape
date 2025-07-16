@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,42 +17,59 @@ import {
   DollarSign,
   TrendingUp,
   MapPin,
-  Plus
+  Plus,
+  Shield,
+  Activity,
+  Heart
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const [selectedRoom, setSelectedRoom] = useState("haunted-mansion");
+  const [selectedRoom, setSelectedRoom] = useState("dungeon");
 
   const activeScapes = [
     {
-      id: "haunted-mansion",
-      name: "Haunted Mansion",
+      id: "dungeon",
+      name: "Dungeon Demo",
       status: "active",
       players: 4,
       timeRemaining: 28,
       startTime: "2:30 PM",
       difficulty: "Hard",
-      progress: 65
+      progress: 65,
+      biometrics: {
+        avgHeartRate: 98,
+        highStressCount: 1,
+        batteryLevel: 85
+      },
+      controlPath: "/room/dungeon"
     },
     {
-      id: "space-station",
-      name: "Space Station Escape",
+      id: "haunted-mansion",
+      name: "Haunted Mansion",
       status: "waiting",
       players: 6,
       timeRemaining: 60,
       startTime: "3:00 PM",
-      difficulty: "Medium",
-      progress: 0
+      difficulty: "Hard",
+      progress: 0,
+      biometrics: null,
+      controlPath: null
     },
     {
-      id: "detective-office",
-      name: "Detective's Office",
+      id: "space-station",
+      name: "Space Station Escape",
       status: "completed",
       players: 3,
       timeRemaining: 0,
       startTime: "1:00 PM",
-      difficulty: "Easy",
-      progress: 100
+      difficulty: "Medium",
+      progress: 100,
+      biometrics: {
+        avgHeartRate: 85,
+        highStressCount: 0,
+        batteryLevel: 92
+      },
+      controlPath: null
     }
   ];
 
@@ -88,20 +106,20 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-6 pt-20 lg:pt-6">
+    <div className="min-h-screen bg-background p-6 pt-20 lg:pt-6">
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Live Dashboard</h1>
-            <p className="text-gray-600 mt-1">Monitor and manage your active 'scapes in real-time</p>
+            <h1 className="text-3xl font-bold tron-text">Live Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Monitor and manage your active 'scapes with real-time biometrics</p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="tron-button">
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
-            <Button size="sm">
+            <Button size="sm" className="tron-button">
               <Plus className="w-4 h-4 mr-2" />
               New Session
             </Button>
@@ -111,47 +129,47 @@ export default function DashboardPage() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
+        <Card className="tron-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Games</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-accent">Today's Games</CardTitle>
+            <Calendar className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayStats.totalGames}</div>
+            <div className="text-2xl font-bold text-foreground">{todayStats.totalGames}</div>
             <p className="text-xs text-muted-foreground">+20% from yesterday</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="tron-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-accent">Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${todayStats.revenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-foreground">${todayStats.revenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">+15% from yesterday</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="tron-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-accent">Success Rate</CardTitle>
+            <Trophy className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayStats.successRate}%</div>
+            <div className="text-2xl font-bold text-foreground">{todayStats.successRate}%</div>
             <p className="text-xs text-muted-foreground">+3% from yesterday</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="tron-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-accent">Avg. Heart Rate</CardTitle>
+            <Heart className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayStats.avgTime}m</div>
-            <p className="text-xs text-muted-foreground">-2m from yesterday</p>
+            <div className="text-2xl font-bold text-foreground">92 BPM</div>
+            <p className="text-xs text-muted-foreground">Biometric monitoring active</p>
           </CardContent>
         </Card>
       </div>
@@ -159,10 +177,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Active Scapes */}
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="tron-card">
             <CardHeader>
-              <CardTitle>Active 'Scapes</CardTitle>
-              <CardDescription>Monitor games in progress and upcoming sessions</CardDescription>
+              <CardTitle className="text-accent">Active 'Scapes</CardTitle>
+              <CardDescription>Monitor games in progress with real-time biometrics</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -170,53 +188,86 @@ export default function DashboardPage() {
                   <div
                     key={scape.id}
                     className={`p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                      selectedRoom === scape.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
+                      selectedRoom === scape.id ? "border-accent bg-accent/5 tron-glow" : "border-muted hover:border-accent/50"
                     }`}
                     onClick={() => setSelectedRoom(scape.id)}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-3 h-3 rounded-full ${getStatusColor(scape.status)}`}></div>
-                        <h3 className="font-semibold text-gray-900">{scape.name}</h3>
-                        <Badge variant="outline" className="text-xs">
+                        <div className={`w-3 h-3 rounded-full ${getStatusColor(scape.status)} tron-pulse`}></div>
+                        <h3 className="font-semibold text-foreground">{scape.name}</h3>
+                        <Badge variant="outline" className="text-xs border-accent text-accent">
                           {scape.difficulty}
                         </Badge>
+                        {scape.id === "dungeon" && (
+                          <Badge variant="outline" className="text-xs border-accent text-accent">
+                            <Activity className="w-3 h-3 mr-1" />
+                            Biometric
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(scape.status)}
-                        <span className="text-sm text-gray-600 capitalize">{scape.status}</span>
+                        <span className="text-sm text-muted-foreground capitalize">{scape.status}</span>
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-4 mb-3">
                       <div className="text-center">
-                        <div className="flex items-center justify-center text-gray-600 mb-1">
+                        <div className="flex items-center justify-center text-muted-foreground mb-1">
                           <Users className="w-4 h-4 mr-1" />
                           <span className="text-sm">Players</span>
                         </div>
-                        <div className="font-semibold">{scape.players}</div>
+                        <div className="font-semibold text-foreground">{scape.players}</div>
                       </div>
                       <div className="text-center">
-                        <div className="flex items-center justify-center text-gray-600 mb-1">
+                        <div className="flex items-center justify-center text-muted-foreground mb-1">
                           <Clock className="w-4 h-4 mr-1" />
                           <span className="text-sm">Time Left</span>
                         </div>
-                        <div className="font-semibold">{scape.timeRemaining}m</div>
+                        <div className="font-semibold text-foreground">{scape.timeRemaining}m</div>
                       </div>
                       <div className="text-center">
-                        <div className="flex items-center justify-center text-gray-600 mb-1">
+                        <div className="flex items-center justify-center text-muted-foreground mb-1">
                           <Play className="w-4 h-4 mr-1" />
                           <span className="text-sm">Started</span>
                         </div>
-                        <div className="font-semibold">{scape.startTime}</div>
+                        <div className="font-semibold text-foreground">{scape.startTime}</div>
                       </div>
                     </div>
+                    
+                    {/* Biometric Data */}
+                    {scape.biometrics && (
+                      <div className="grid grid-cols-3 gap-4 mb-3 p-3 bg-accent/10 rounded-lg">
+                        <div className="text-center">
+                          <div className="flex items-center justify-center text-accent mb-1">
+                            <Heart className="w-4 h-4 mr-1" />
+                            <span className="text-sm">Avg HR</span>
+                          </div>
+                          <div className="font-semibold text-accent">{scape.biometrics.avgHeartRate} BPM</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center text-accent mb-1">
+                            <AlertCircle className="w-4 h-4 mr-1" />
+                            <span className="text-sm">Stress</span>
+                          </div>
+                          <div className="font-semibold text-accent">{scape.biometrics.highStressCount} High</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center text-accent mb-1">
+                            <Activity className="w-4 h-4 mr-1" />
+                            <span className="text-sm">Battery</span>
+                          </div>
+                          <div className="font-semibold text-accent">{scape.biometrics.batteryLevel}%</div>
+                        </div>
+                      </div>
+                    )}
                     
                     {scape.status === "active" && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Progress</span>
-                          <span className="font-medium">{scape.progress}%</span>
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="font-medium text-accent">{scape.progress}%</span>
                         </div>
                         <Progress value={scape.progress} className="h-2" />
                       </div>
@@ -224,18 +275,27 @@ export default function DashboardPage() {
                     
                     {scape.status === "active" && (
                       <div className="flex items-center space-x-2 mt-3">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="tron-button">
                           <Pause className="w-4 h-4 mr-2" />
                           Pause
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="tron-button">
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Hint
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          Monitor
-                        </Button>
+                        {scape.controlPath ? (
+                          <Link href={scape.controlPath}>
+                            <Button size="sm" variant="outline" className="tron-button">
+                              <Shield className="w-4 h-4 mr-2" />
+                              Control Room
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button size="sm" variant="outline" className="tron-button">
+                            <MapPin className="w-4 h-4 mr-2" />
+                            Monitor
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -247,22 +307,22 @@ export default function DashboardPage() {
 
         {/* Upcoming Bookings */}
         <div>
-          <Card>
+          <Card className="tron-card">
             <CardHeader>
-              <CardTitle>Upcoming Bookings</CardTitle>
+              <CardTitle className="text-accent">Upcoming Bookings</CardTitle>
               <CardDescription>Today's scheduled sessions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {upcomingBookings.map((booking, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 bg-accent/5 rounded-lg border border-accent/20">
                     <div>
-                      <div className="font-semibold text-gray-900">{booking.time}</div>
-                      <div className="text-sm text-gray-600">{booking.room}</div>
-                      <div className="text-xs text-gray-500">{booking.customer}</div>
+                      <div className="font-semibold text-foreground">{booking.time}</div>
+                      <div className="text-sm text-muted-foreground">{booking.room}</div>
+                      <div className="text-xs text-muted-foreground">{booking.customer}</div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-accent">
                         <Users className="w-4 h-4 mr-1" />
                         {booking.players}
                       </div>
@@ -271,7 +331,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               
-              <Button className="w-full mt-4" variant="outline">
+              <Button className="w-full mt-4 tron-button" variant="outline">
                 <Calendar className="w-4 h-4 mr-2" />
                 View Full Schedule
               </Button>
@@ -279,21 +339,27 @@ export default function DashboardPage() {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="mt-6">
+          <Card className="mt-6 tron-card">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="text-accent">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-2">
-                <Button className="w-full" variant="outline">
+                <Link href="/room/dungeon">
+                  <Button className="w-full tron-button" variant="outline">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Dungeon Control Room
+                  </Button>
+                </Link>
+                <Button className="w-full tron-button" variant="outline">
                   <Play className="w-4 h-4 mr-2" />
                   Start Walk-in Session
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full tron-button" variant="outline">
                   <AlertCircle className="w-4 h-4 mr-2" />
                   Emergency Reset
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full tron-button" variant="outline">
                   <TrendingUp className="w-4 h-4 mr-2" />
                   View Analytics
                 </Button>
