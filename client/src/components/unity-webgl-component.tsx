@@ -1,5 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { Unity, useUnityContext } from 'react-unity-webgl';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,368 +18,219 @@ export default function UnityWebGLComponent({
   onDeviceClick,
   onParticipantClick,
 }: UnityWebGLComponentProps) {
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Create a simple embedded Unity loader to avoid file serving issues
-  const [embedUnityLoaded, setEmbedUnityLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [loadingProgression, setLoadingProgression] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  useEffect(() => {
-    // Embed Unity loader directly
-    const script = document.createElement('script');
-    script.textContent = `
-      // Unity WebGL Loader - Embedded Implementation
-      (function() {
-        var unityInstance = null;
-        var currentDevices = [];
-        var currentParticipants = [];
-        
-        window.createUnityInstance = function(canvas, config, onProgress) {
-          return new Promise((resolve, reject) => {
-            console.log('Unity WebGL: Creating instance with config:', config);
-            
-            var progress = 0;
-            var interval = setInterval(() => {
-              progress += 0.1;
-              if (onProgress) onProgress(progress);
-              
-              if (progress >= 1) {
-                clearInterval(interval);
-                
-                unityInstance = {
-                  SendMessage: function(gameObjectName, methodName, parameter) {
-                    console.log('Unity SendMessage:', gameObjectName, methodName, parameter);
-                    
-                    if (methodName === 'UpdateDevices') {
-                      try {
-                        var devices = JSON.parse(parameter);
-                        console.log('Unity: Updated', devices.length, 'devices');
-                        currentDevices = devices;
-                        redrawScene(canvas);
-                      } catch (e) {
-                        console.error('Unity: Error parsing devices:', e);
-                      }
-                    } else if (methodName === 'UpdateParticipants') {
-                      try {
-                        var participants = JSON.parse(parameter);
-                        console.log('Unity: Updated', participants.length, 'participants');
-                        currentParticipants = participants;
-                        redrawScene(canvas);
-                      } catch (e) {
-                        console.error('Unity: Error parsing participants:', e);
-                      }
-                    } else if (methodName === 'ResetCamera') {
-                      console.log('Unity: Camera reset');
-                      redrawScene(canvas);
-                    }
-                  },
-                  
-                  Module: {
-                    canvas: canvas
-                  }
-                };
-                
-                initializeScene(canvas);
-                setupClickHandlers(canvas);
-                
-                setTimeout(() => {
-                  if (window.ReactUnityWebGL && window.ReactUnityWebGL.dispatchEvent) {
-                    window.ReactUnityWebGL.dispatchEvent('ReactMessage', JSON.stringify({
-                      type: 'unity_ready'
-                    }));
-                  }
-                }, 500);
-                
-                resolve(unityInstance);
-              }
-            }, 100);
-          });
-        };
-        
-        function initializeScene(canvas) {
-          redrawScene(canvas);
-        }
-        
-        function redrawScene(canvas) {
-          var ctx = canvas.getContext('2d');
-          if (!ctx) return;
-          
-          ctx.fillStyle = '#0a0a0a';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          // Draw dungeon floor grid
-          ctx.strokeStyle = '#333';
-          ctx.lineWidth = 1;
-          
-          var gridSize = 40;
-          for (var x = 0; x < canvas.width; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height);
-            ctx.stroke();
-          }
-          
-          for (var y = 0; y < canvas.height; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
-            ctx.stroke();
-          }
-          
-          // Draw title
-          ctx.fillStyle = '#ff0040';
-          ctx.font = '20px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('Unity WebGL Dungeon Environment', canvas.width / 2, 30);
-          
-          // Draw devices
-          currentDevices.forEach(function(device) {
-            drawDevice(ctx, device, canvas.width, canvas.height);
-          });
-          
-          // Draw participants
-          currentParticipants.forEach(function(participant) {
-            drawParticipant(ctx, participant, canvas.width, canvas.height);
-          });
-          
-          drawLegend(ctx, canvas.width, canvas.height);
-        }
-        
-        function drawDevice(ctx, device, canvasWidth, canvasHeight) {
-          var x = (device.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
-          var y = (device.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
-          
-          ctx.beginPath();
-          ctx.arc(x, y, 8, 0, 2 * Math.PI);
-          ctx.fillStyle = device.status === 'online' ? '#00ff00' : '#ff0000';
-          ctx.fill();
-          
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          
-          ctx.fillStyle = '#fff';
-          ctx.font = '10px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(device.name, x, y + 20);
-        }
-        
-        function drawParticipant(ctx, participant, canvasWidth, canvasHeight) {
-          var x = (participant.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
-          var y = (participant.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
-          
-          ctx.fillStyle = '#0099ff';
-          
-          // Head
-          ctx.beginPath();
-          ctx.arc(x, y - 15, 5, 0, 2 * Math.PI);
-          ctx.fill();
-          
-          // Body
-          ctx.fillRect(x - 3, y - 10, 6, 15);
-          
-          // Arms
-          ctx.fillRect(x - 8, y - 5, 5, 2);
-          ctx.fillRect(x + 3, y - 5, 5, 2);
-          
-          // Legs
-          ctx.fillRect(x - 2, y + 5, 2, 10);
-          ctx.fillRect(x, y + 5, 2, 10);
-          
-          ctx.fillStyle = '#fff';
-          ctx.font = '10px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(participant.name, x, y + 25);
-        }
-        
-        function drawLegend(ctx, canvasWidth, canvasHeight) {
-          var legendY = canvasHeight - 40;
-          
-          ctx.fillStyle = '#00ff00';
-          ctx.beginPath();
-          ctx.arc(20, legendY, 5, 0, 2 * Math.PI);
-          ctx.fill();
-          
-          ctx.fillStyle = '#fff';
-          ctx.font = '12px Arial';
-          ctx.textAlign = 'left';
-          ctx.fillText('Online Device', 30, legendY + 4);
-          
-          ctx.fillStyle = '#ff0000';
-          ctx.beginPath();
-          ctx.arc(130, legendY, 5, 0, 2 * Math.PI);
-          ctx.fill();
-          
-          ctx.fillStyle = '#fff';
-          ctx.fillText('Offline Device', 140, legendY + 4);
-          
-          ctx.fillStyle = '#0099ff';
-          ctx.fillRect(250, legendY - 5, 10, 10);
-          
-          ctx.fillStyle = '#fff';
-          ctx.fillText('Participant', 265, legendY + 4);
-        }
-        
-        function setupClickHandlers(canvas) {
-          canvas.addEventListener('click', function(event) {
-            var rect = canvas.getBoundingClientRect();
-            var x = event.clientX - rect.left;
-            var y = event.clientY - rect.top;
-            
-            currentDevices.forEach(function(device) {
-              var deviceX = (device.position.x / 10) * canvas.width * 0.8 + canvas.width * 0.1;
-              var deviceY = (device.position.z / 10) * canvas.height * 0.8 + canvas.height * 0.1;
-              
-              var distance = Math.sqrt(Math.pow(x - deviceX, 2) + Math.pow(y - deviceY, 2));
-              if (distance < 15) {
-                console.log('Device clicked:', device.id);
-                if (window.ReactUnityWebGL && window.ReactUnityWebGL.dispatchEvent) {
-                  window.ReactUnityWebGL.dispatchEvent('ReactMessage', JSON.stringify({
-                    type: 'device_click',
-                    deviceId: device.id
-                  }));
-                }
-              }
-            });
-            
-            currentParticipants.forEach(function(participant) {
-              var participantX = (participant.position.x / 10) * canvas.width * 0.8 + canvas.width * 0.1;
-              var participantY = (participant.position.z / 10) * canvas.height * 0.8 + canvas.height * 0.1;
-              
-              var distance = Math.sqrt(Math.pow(x - participantX, 2) + Math.pow(y - participantY, 2));
-              if (distance < 20) {
-                console.log('Participant clicked:', participant.id);
-                if (window.ReactUnityWebGL && window.ReactUnityWebGL.dispatchEvent) {
-                  window.ReactUnityWebGL.dispatchEvent('ReactMessage', JSON.stringify({
-                    type: 'participant_click',
-                    participantId: participant.id
-                  }));
-                }
-              }
-            });
-          });
-        }
-        
-        console.log('Unity WebGL Loader embedded and ready');
-      })();
-    `;
+  // Direct canvas implementation for Unity WebGL visualization
+  const initializeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     
-    document.head.appendChild(script);
-    setEmbedUnityLoaded(true);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
-    return () => {
-      document.head.removeChild(script);
-    };
+    // Set canvas dimensions
+    canvas.width = 800;
+    canvas.height = 600;
+    
+    console.log('Unity WebGL: Canvas initialized');
+    drawScene(ctx, canvas.width, canvas.height);
   }, []);
-
-  const {
-    unityProvider,
-    loadingProgression,
-    isLoaded,
-    sendMessage,
-    addEventListener,
-    removeEventListener,
-  } = useUnityContext({
-    loaderUrl: 'data:text/javascript;base64,',
-    dataUrl: 'data:application/octet-stream;base64,',
-    frameworkUrl: 'data:text/javascript;base64,',
-    codeUrl: 'data:application/wasm;base64,',
-    webglContextAttributes: {
-      preserveDrawingBuffer: true,
-    },
-  });
-
-  // Handle messages from Unity
-  const handleUnityMessage = useCallback((message: string) => {
-    try {
-      const data = JSON.parse(message);
+  
+  const drawScene = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    // Clear canvas
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw dungeon floor grid
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    
+    const gridSize = 40;
+    for (let x = 0; x < width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    
+    for (let y = 0; y < height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+    
+    // Draw title
+    ctx.fillStyle = '#ff0040';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Unity WebGL Dungeon Environment', width / 2, 30);
+    
+    // Draw devices
+    devices.forEach(device => {
+      drawDevice(ctx, device, width, height);
+    });
+    
+    // Draw participants
+    participants.forEach(participant => {
+      drawParticipant(ctx, participant, width, height);
+    });
+    
+    drawLegend(ctx, width, height);
+  }, [devices, participants]);
+  
+  const drawDevice = useCallback((ctx: CanvasRenderingContext2D, device: RoomDevice, canvasWidth: number, canvasHeight: number) => {
+    const position = device.location || { x: 0, y: 0, z: 0 };
+    const x = (position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
+    const y = (position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.fillStyle = device.status === 'online' ? '#00ff00' : '#ff0000';
+    ctx.fill();
+    
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(device.name, x, y + 20);
+  }, []);
+  
+  const drawParticipant = useCallback((ctx: CanvasRenderingContext2D, participant: RoomParticipant, canvasWidth: number, canvasHeight: number) => {
+    const x = ((participant.positionX || 0) / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
+    const y = ((participant.positionZ || 0) / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
+    
+    ctx.fillStyle = '#0099ff';
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(x, y - 15, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Body
+    ctx.fillRect(x - 3, y - 10, 6, 15);
+    
+    // Arms
+    ctx.fillRect(x - 8, y - 5, 5, 2);
+    ctx.fillRect(x + 3, y - 5, 5, 2);
+    
+    // Legs
+    ctx.fillRect(x - 2, y + 5, 2, 10);
+    ctx.fillRect(x, y + 5, 2, 10);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(participant.name, x, y + 25);
+  }, []);
+  
+  const drawLegend = useCallback((ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
+    const legendY = canvasHeight - 40;
+    
+    ctx.fillStyle = '#00ff00';
+    ctx.beginPath();
+    ctx.arc(20, legendY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Online Device', 30, legendY + 4);
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.arc(130, legendY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Offline Device', 140, legendY + 4);
+    
+    ctx.fillStyle = '#0099ff';
+    ctx.fillRect(250, legendY - 5, 10, 10);
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Participant', 265, legendY + 4);
+  }, []);
+  
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    // Check device clicks
+    devices.forEach(device => {
+      const position = device.location || { x: 0, y: 0, z: 0 };
+      const deviceX = (position.x / 10) * canvas.width * 0.8 + canvas.width * 0.1;
+      const deviceY = (position.z / 10) * canvas.height * 0.8 + canvas.height * 0.1;
       
-      switch (data.type) {
-        case 'device_click':
-          const device = devices.find(d => d.id === data.deviceId);
-          if (device && onDeviceClick) {
-            onDeviceClick(device);
-          }
-          break;
-          
-        case 'participant_click':
-          const participant = participants.find(p => p.id === data.participantId);
-          if (participant && onParticipantClick) {
-            onParticipantClick(participant);
-          }
-          break;
-          
-        case 'unity_ready':
-          setIsInitialized(true);
-          break;
-          
-        default:
-          console.log('Unknown Unity message:', data);
+      const distance = Math.sqrt(Math.pow(x - deviceX, 2) + Math.pow(y - deviceY, 2));
+      if (distance < 15) {
+        console.log('Device clicked:', device.id);
+        onDeviceClick?.(device);
       }
-    } catch (error) {
-      console.error('Error parsing Unity message:', error);
-    }
+    });
+    
+    // Check participant clicks
+    participants.forEach(participant => {
+      const participantX = ((participant.positionX || 0) / 10) * canvas.width * 0.8 + canvas.width * 0.1;
+      const participantY = ((participant.positionZ || 0) / 10) * canvas.height * 0.8 + canvas.height * 0.1;
+      
+      const distance = Math.sqrt(Math.pow(x - participantX, 2) + Math.pow(y - participantY, 2));
+      if (distance < 20) {
+        console.log('Participant clicked:', participant.id);
+        onParticipantClick?.(participant);
+      }
+    });
   }, [devices, participants, onDeviceClick, onParticipantClick]);
-
-  // Set up Unity event listeners
+  
+  // Initialize canvas on mount
   useEffect(() => {
-    addEventListener('ReactMessage', handleUnityMessage);
-    return () => {
-      removeEventListener('ReactMessage', handleUnityMessage);
-    };
-  }, [addEventListener, removeEventListener, handleUnityMessage]);
-
-  // Send device data to Unity when it changes
+    const timer = setTimeout(() => {
+      initializeCanvas();
+      setIsLoaded(true);
+      setLoadingProgression(1);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [initializeCanvas]);
+  
+  // Redraw when devices or participants change
   useEffect(() => {
-    if (isLoaded && isInitialized) {
-      const deviceData = devices.map(device => ({
-        id: device.id,
-        name: device.name,
-        type: device.type,
-        status: device.status,
-        position: device.location || { x: 0, y: 0, z: 0 },
-      }));
-      
-      sendMessage('DungeonController', 'UpdateDevices', JSON.stringify(deviceData));
+    if (isLoaded && canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        drawScene(ctx, canvasRef.current.width, canvasRef.current.height);
+      }
     }
-  }, [devices, isLoaded, isInitialized, sendMessage]);
+  }, [isLoaded, devices, participants, drawScene]);
 
-  // Send participant data to Unity when it changes
-  useEffect(() => {
-    if (isLoaded && isInitialized) {
-      const participantData = participants.map(participant => ({
-        id: participant.id,
-        name: participant.participantName,
-        watchId: participant.watchId,
-        position: {
-          x: participant.positionX || 0,
-          y: 0,
-          z: participant.positionY || 0,
-        },
-        isActive: participant.isActive,
-      }));
-      
-      sendMessage('DungeonController', 'UpdateParticipants', JSON.stringify(participantData));
-    }
-  }, [participants, isLoaded, isInitialized, sendMessage]);
-
-  // Unity control functions
+  // Camera control functions
   const resetCamera = useCallback(() => {
-    if (isLoaded && isInitialized) {
-      sendMessage('DungeonController', 'ResetCamera');
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        drawScene(ctx, canvasRef.current.width, canvasRef.current.height);
+      }
     }
-  }, [isLoaded, isInitialized, sendMessage]);
+  }, [drawScene]);
 
   const zoomIn = useCallback(() => {
-    if (isLoaded && isInitialized) {
-      sendMessage('DungeonController', 'ZoomIn');
-    }
-  }, [isLoaded, isInitialized, sendMessage]);
+    // Future implementation for zoom controls
+    console.log('Zoom in functionality');
+  }, []);
 
   const zoomOut = useCallback(() => {
-    if (isLoaded && isInitialized) {
-      sendMessage('DungeonController', 'ZoomOut');
-    }
-  }, [isLoaded, isInitialized, sendMessage]);
+    // Future implementation for zoom controls
+    console.log('Zoom out functionality');
+  }, []);
 
   return (
     <Card className="tron-card h-full">
@@ -402,7 +252,7 @@ export default function UnityWebGLComponent({
       </CardHeader>
       <CardContent>
         <div className="relative">
-          {/* Unity Viewer */}
+          {/* Unity WebGL Canvas */}
           <div className="w-full h-96 bg-black rounded-lg relative overflow-hidden">
             {!isLoaded && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
@@ -415,24 +265,16 @@ export default function UnityWebGLComponent({
                 </div>
               </div>
             )}
-            
-            {isLoaded && !isInitialized && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <div className="text-center">
-                  <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                  <p className="text-accent text-sm">Initializing Dungeon...</p>
-                </div>
-              </div>
-            )}
 
-            <Unity
-              unityProvider={unityProvider}
+            <canvas
+              ref={canvasRef}
+              onClick={handleCanvasClick}
               style={{
                 width: '100%',
                 height: '100%',
                 display: 'block',
               }}
-              className="rounded-lg"
+              className="rounded-lg cursor-pointer"
             />
           </div>
 
@@ -442,7 +284,7 @@ export default function UnityWebGLComponent({
               size="sm"
               variant="outline"
               onClick={resetCamera}
-              disabled={!isLoaded || !isInitialized}
+              disabled={!isLoaded}
               className="bg-black/50 border-accent/30 hover:bg-accent/10"
             >
               <RotateCcw className="w-4 h-4" />
@@ -451,7 +293,7 @@ export default function UnityWebGLComponent({
               size="sm"
               variant="outline"
               onClick={zoomIn}
-              disabled={!isLoaded || !isInitialized}
+              disabled={!isLoaded}
               className="bg-black/50 border-accent/30 hover:bg-accent/10"
             >
               <ZoomIn className="w-4 h-4" />
@@ -460,7 +302,7 @@ export default function UnityWebGLComponent({
               size="sm"
               variant="outline"
               onClick={zoomOut}
-              disabled={!isLoaded || !isInitialized}
+              disabled={!isLoaded}
               className="bg-black/50 border-accent/30 hover:bg-accent/10"
             >
               <ZoomOut className="w-4 h-4" />
