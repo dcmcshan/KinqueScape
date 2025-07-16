@@ -150,10 +150,16 @@ export default function RealUnityWebGL({
           script.onload = () => {
             console.log('Unity WebGL: Override script loaded');
             if (window.UnityRoomOverride) {
+              // Give Unity time to fully initialize, then create persistent room
               setTimeout(() => {
+                console.log('Unity WebGL: Starting persistent room creation');
                 window.UnityRoomOverride.createDungeonRoom(instance);
+              }, 2000);
+              
+              // Force render after room creation
+              setTimeout(() => {
                 window.UnityRoomOverride.forceRender(instance);
-              }, 1000);
+              }, 3000);
             }
           };
           document.head.appendChild(script);
