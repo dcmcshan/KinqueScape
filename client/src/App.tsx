@@ -10,6 +10,7 @@ import PlanPage from "@/pages/plan";
 import DashboardPage from "@/pages/dashboard";
 import RoomDungeonPage from "@/pages/room-dungeon";
 import ScapesPage from "@/pages/scapes";
+import PropsPage from "@/pages/props";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
         <Route path="/plan" component={() => <AppLayout><PlanPage /></AppLayout>} />
         <Route path="/dash" component={() => <AppLayout><DashboardPage /></AppLayout>} />
         <Route path="/scapes" component={() => <AppLayout><ScapesPage /></AppLayout>} />
+        <Route path="/props" component={() => <AppLayout><PropsPage /></AppLayout>} />
         <Route path="/room/dungeon" component={() => <AppLayout><RoomDungeonPage /></AppLayout>} />
         <Route component={NotFound} />
       </Switch>

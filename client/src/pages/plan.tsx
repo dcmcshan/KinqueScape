@@ -43,9 +43,10 @@ export default function PlanPage() {
                   approach ensures we understand every aspect of the technology before deploying it in customer experiences.
                 </p>
                 <p>
-                  The business model focuses on premium adult experience centers, franchise opportunities, and technology licensing 
-                  to established adult entertainment venues. We target the intersection of the $15B adult toy market and the 
-                  growing experience economy, creating a new category of data-driven intimate entertainment.
+                  The business model focuses on premium adult experience centers with multiple revenue streams: direct experience bookings, 
+                  voyeurism viewing packages, pay-per-performer models, franchise opportunities, and technology licensing. We target the 
+                  intersection of the $15B adult toy market, the $97B webcam industry, and the growing experience economy, creating a 
+                  new category of data-driven intimate entertainment with both participant and observer monetization.
                 </p>
               </div>
             </div>
@@ -138,24 +139,50 @@ export default function PlanPage() {
             </div>
 
             <div className="tron-card p-6 rounded-lg">
+              <h3 className="text-lg font-semibold tron-text mb-4">Revenue Streams</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Experience Bookings</span>
+                  <span className="font-medium text-accent">$150-400/session</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Voyeur Viewing</span>
+                  <span className="font-medium text-accent">$25-75/session</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Paid Performers</span>
+                  <span className="font-medium text-accent">$200-500/hour</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Private Sessions</span>
+                  <span className="font-medium text-accent">$500-1500/session</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Streaming Revenue</span>
+                  <span className="font-medium text-accent">$10-50/viewer</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="tron-card p-6 rounded-lg">
               <h3 className="text-lg font-semibold tron-text mb-4">Revenue Projections</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Year 1</span>
-                  <span className="font-bold text-accent">$250K</span>
+                  <span className="font-bold text-accent">$420K</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Year 2</span>
-                  <span className="font-bold text-accent">$850K</span>
+                  <span className="font-bold text-accent">$1.2M</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Year 3</span>
-                  <span className="font-bold text-accent">$2.1M</span>
+                  <span className="font-bold text-accent">$3.5M</span>
                 </div>
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-foreground">Break-even</span>
-                    <span className="font-bold text-accent">Month 18</span>
+                    <span className="font-bold text-accent">Month 14</span>
                   </div>
                 </div>
               </div>
@@ -166,19 +193,23 @@ export default function PlanPage() {
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <Target className="w-4 h-4 text-accent" />
-                  <span className="text-sm">Existing escape room operators</span>
+                  <span className="text-sm">Couples seeking intimate experiences</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Target className="w-4 h-4 text-accent" />
-                  <span className="text-sm">Entertainment venues</span>
+                  <span className="text-sm">Adult entertainment venues</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Target className="w-4 h-4 text-accent" />
-                  <span className="text-sm">Corporate team building</span>
+                  <span className="text-sm">Voyeurism enthusiasts</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Target className="w-4 h-4 text-accent" />
-                  <span className="text-sm">Research institutions</span>
+                  <span className="text-sm">Adult content creators</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Target className="w-4 h-4 text-accent" />
+                  <span className="text-sm">Sex-positive communities</span>
                 </div>
               </div>
             </div>
