@@ -26,12 +26,31 @@ window.UnityRoomOverride = {
   
   stopRoomClearing: function() {
     try {
-      // Disable the automatic room clearing that's happening
-      this.unityInstance.SendMessage('DungeonController', 'StopAutoClear', 'true');
-      this.unityInstance.SendMessage('Canvas', 'SetActive', 'false'); // Disable 2D overlay
-      console.log('Unity Override: Stopped automatic room clearing');
+      // Aggressively disable all existing room systems
+      this.unityInstance.SendMessage('DungeonController', 'ClearScene', '');
+      this.unityInstance.SendMessage('DungeonController', 'DestroyAllRoomObjects', '');
+      this.unityInstance.SendMessage('Canvas', 'SetActive', 'false');
+      
+      // Disable the hardcoded room that keeps appearing
+      const destroyCommands = [
+        'StaticDungeonRoom',
+        'DungeonWalls', 
+        'DungeonFloor',
+        'RoomBoundary',
+        'DefaultRoom'
+      ];
+      
+      destroyCommands.forEach(objName => {
+        try {
+          this.unityInstance.SendMessage('GameObject', 'Destroy', objName);
+        } catch (e) {
+          // Continue trying all object names
+        }
+      });
+      
+      console.log('Unity Override: Aggressively cleared existing room');
     } catch (error) {
-      console.log('Unity Override: Could not stop room clearing:', error.message);
+      console.log('Unity Override: Room clearing attempt:', error.message);
     }
   },
   
@@ -41,20 +60,31 @@ window.UnityRoomOverride = {
     try {
       console.log('Unity Override: Creating persistent 3D room geometry');
       
-      // Create room based on actual GLB dimensions
-      const roomData = {
-        center: { x: 0, y: 0, z: 0 },
-        size: { x: 5.4, y: 2.9, z: 6.4 } // From GLB bounding box
+      // Create room matching EXACT GLB file dimensions and layout
+      // GLB bounds: min(-2.71, -1.54, -3.19) max(2.71, 1.37, 3.19)
+      const glbBounds = {
+        minX: -2.71, maxX: 2.71,
+        minY: -1.54, maxY: 1.37, 
+        minZ: -3.19, maxZ: 3.19
       };
       
-      // Create persistent objects with specific names to avoid clearing
+      const centerX = (glbBounds.minX + glbBounds.maxX) / 2;
+      const centerY = (glbBounds.minY + glbBounds.maxY) / 2;
+      const centerZ = (glbBounds.minZ + glbBounds.maxZ) / 2;
+      const sizeX = glbBounds.maxX - glbBounds.minX;
+      const sizeY = glbBounds.maxY - glbBounds.minY;
+      const sizeZ = glbBounds.maxZ - glbBounds.minZ;
+      
+      console.log(`Unity Override: Creating GLB-accurate room - Size: ${sizeX.toFixed(2)} x ${sizeY.toFixed(2)} x ${sizeZ.toFixed(2)}`);
+      
+      // Create room objects with GLB-accurate positioning
       const roomObjects = [
-        { type: 'Plane', name: 'PersistentFloor', pos: [0, -1.5, 0], scale: [5.4, 1, 6.4], color: '0.2,0.2,0.2,1' },
-        { type: 'Cube', name: 'PersistentNorthWall', pos: [0, 0, 3.2], scale: [5.4, 2.9, 0.2], color: '0.4,0.4,0.4,1' },
-        { type: 'Cube', name: 'PersistentSouthWall', pos: [0, 0, -3.2], scale: [5.4, 2.9, 0.2], color: '0.4,0.4,0.4,1' },
-        { type: 'Cube', name: 'PersistentEastWall', pos: [2.7, 0, 0], scale: [0.2, 2.9, 6.4], color: '0.4,0.4,0.4,1' },
-        { type: 'Cube', name: 'PersistentWestWall', pos: [-2.7, 0, 0], scale: [0.2, 2.9, 6.4], color: '0.4,0.4,0.4,1' },
-        { type: 'Sphere', name: 'PersistentTestSphere', pos: [0, 2, 0], scale: [1, 1, 1], color: '1,0,0,1' }
+        { type: 'Plane', name: 'GLBFloor', pos: [centerX, glbBounds.minY, centerZ], scale: [sizeX/10, 1, sizeZ/10], color: '0.15,0.1,0.05,1' },
+        { type: 'Cube', name: 'GLBNorthWall', pos: [centerX, centerY, glbBounds.maxZ], scale: [sizeX, sizeY, 0.1], color: '0.3,0.25,0.2,1' },
+        { type: 'Cube', name: 'GLBSouthWall', pos: [centerX, centerY, glbBounds.minZ], scale: [sizeX, sizeY, 0.1], color: '0.3,0.25,0.2,1' },
+        { type: 'Cube', name: 'GLBEastWall', pos: [glbBounds.maxX, centerY, centerZ], scale: [0.1, sizeY, sizeZ], color: '0.3,0.25,0.2,1' },
+        { type: 'Cube', name: 'GLBWestWall', pos: [glbBounds.minX, centerY, centerZ], scale: [0.1, sizeY, sizeZ], color: '0.3,0.25,0.2,1' },
+        { type: 'Sphere', name: 'GLBCenterMarker', pos: [centerX, centerY + 0.5, centerZ], scale: [0.3, 0.3, 0.3], color: '1,0,0,1' }
       ];
       
       roomObjects.forEach((obj, index) => {
@@ -77,11 +107,15 @@ window.UnityRoomOverride = {
         }, index * 100);
       });
       
-      // Position camera to view the room
+      // Position camera to view the GLB-accurate room
       setTimeout(() => {
-        this.unityInstance.SendMessage('DungeonController', 'SetCameraPosition', '4,3,6');
-        this.unityInstance.SendMessage('DungeonController', 'SetCameraTarget', '0,0,0');
-        console.log('Unity Override: Camera positioned for room view');
+        const camX = centerX + sizeX * 0.7;
+        const camY = centerY + sizeY * 1.5;
+        const camZ = centerZ + sizeZ * 0.7;
+        
+        this.unityInstance.SendMessage('DungeonController', 'SetCameraPosition', `${camX},${camY},${camZ}`);
+        this.unityInstance.SendMessage('DungeonController', 'SetCameraTarget', `${centerX},${centerY},${centerZ}`);
+        console.log(`Unity Override: Camera positioned for GLB room view at (${camX.toFixed(1)}, ${camY.toFixed(1)}, ${camZ.toFixed(1)})`);
       }, 1000);
       
       this.roomCreated = true;

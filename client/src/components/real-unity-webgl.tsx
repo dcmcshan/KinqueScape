@@ -150,16 +150,26 @@ export default function RealUnityWebGL({
           script.onload = () => {
             console.log('Unity WebGL: Override script loaded');
             if (window.UnityRoomOverride) {
-              // Give Unity time to fully initialize, then create persistent room
+              // First stop all existing Unity systems that create wrong room
               setTimeout(() => {
-                console.log('Unity WebGL: Starting persistent room creation');
-                window.UnityRoomOverride.createDungeonRoom(instance);
-              }, 2000);
+                console.log('Unity WebGL: Disabling existing room systems');
+                instance.SendMessage('DungeonController', 'StopAllRoomGeneration', '');
+                
+                // Stop the update loop that redraws the wrong room
+                instance.SendMessage('DungeonController', 'PauseUpdates', 'true');
+              }, 500);
               
-              // Force render after room creation
+              // Then create the correct GLB-based room
               setTimeout(() => {
+                console.log('Unity WebGL: Creating GLB-accurate room');
+                window.UnityRoomOverride.createDungeonRoom(instance);
+              }, 1500);
+              
+              // Resume updates with correct room
+              setTimeout(() => {
+                instance.SendMessage('DungeonController', 'PauseUpdates', 'false');
                 window.UnityRoomOverride.forceRender(instance);
-              }, 3000);
+              }, 2500);
             }
           };
           document.head.appendChild(script);
