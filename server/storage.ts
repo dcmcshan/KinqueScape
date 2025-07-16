@@ -549,6 +549,19 @@ export class MemStorage implements IStorage {
       data => participantIds.includes(data.participantId)
     );
   }
+
+  // Add demo participant for testing
+  async addDemoParticipant(roomId: number): Promise<RoomParticipant> {
+    const demoParticipant: InsertRoomParticipant = {
+      roomId,
+      participantName: `Demo User ${this.currentParticipantId}`,
+      watchId: `AmazFit_${Math.random().toString(36).substr(2, 6)}`,
+      positionX: Math.random() * 10 - 5,
+      positionY: Math.random() * 10 - 5,
+    };
+    
+    return this.addRoomParticipant(demoParticipant);
+  }
 }
 
 export const storage = new MemStorage();

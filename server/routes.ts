@@ -595,6 +595,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add demo participant
+  app.post("/api/rooms/:roomId/participants/demo", async (req, res) => {
+    try {
+      const roomId = parseInt(req.params.roomId);
+      const participant = await storage.addDemoParticipant(roomId);
+      res.json(participant);
+    } catch (error) {
+      console.error("Error adding demo participant:", error);
+      res.status(500).json({ error: "Failed to add demo participant" });
+    }
+  });
+
+  // Simulate biometric data for participant
+  app.post("/api/rooms/:roomId/participants/:participantId/simulate-biometrics", async (req, res) => {
+    try {
+      const roomId = parseInt(req.params.roomId);
+      const participantId = parseInt(req.params.participantId);
+      
+      // Generate realistic biometric data
+      const heartRate = 70 + Math.random() * 50; // 70-120 BPM
+      const hrv = 20 + Math.random() * 40; // 20-60 ms
+      const batteryLevel = 85 + Math.random() * 15; // 85-100%
+      
+      const biometricData = await storage.createBiometricData({
+        participantId,
+        heartRate: Math.round(heartRate),
+        hrv: Math.round(hrv),
+        batteryLevel: Math.round(batteryLevel),
+      });
+      
+      res.json(biometricData);
+    } catch (error) {
+      console.error("Error simulating biometric data:", error);
+      res.status(500).json({ error: "Failed to simulate biometric data" });
+    }
+  });
+
   // Biometric data routes
   app.get("/api/participants/:participantId/biometrics", async (req, res) => {
     try {

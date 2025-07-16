@@ -182,125 +182,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-primary-foreground/80">Escape Rooms Created</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">$2M+</div>
-              <div className="text-primary-foreground/80">Revenue Generated</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">150+</div>
-              <div className="text-primary-foreground/80">Business Launched</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">98%</div>
-              <div className="text-primary-foreground/80">Success Rate</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Testimonials */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Entrepreneurs</h2>
-            <p className="text-xl text-gray-600">See what successful escape room owners say about KinqueScape</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4">
-                  "KinqueScape transformed our idea into a thriving business. The design tools made it easy to create engaging 'scapes, and the business planner helped us launch profitably."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Sarah Chen</div>
-                    <div className="text-sm text-gray-500">Founder, Mystic Escapes</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4">
-                  "The dashboard feature is incredible for managing multiple 'scapes. We can monitor games in real-time and our customer satisfaction has never been higher."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center mr-3">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Mark Rodriguez</div>
-                    <div className="text-sm text-gray-500">Owner, Puzzle Palace</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4">
-                  "From concept to opening in just 3 months! The integrated approach saved us countless hours and the financial projections were spot-on."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center mr-3">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Emma Thompson</div>
-                    <div className="text-sm text-gray-500">CEO, Adventure Rooms</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Launch Your Escape Room Business?</h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join hundreds of successful entrepreneurs who've built thriving escape room businesses with KinqueScape.
+          <h2 className="text-3xl font-bold text-foreground mb-4">Ready to Launch Your Escape Room Business?</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Experience the complete KinqueScape platform with our interactive demo featuring the Dungeon 'scape.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/design">
-              <Button size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto tron-button">
                 Start Your First 'Scape
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
             <Link href="/plan">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                Create Business Plan
+              <Button size="lg" variant="outline" className="w-full sm:w-auto tron-button">
+                View Business Plan
               </Button>
             </Link>
           </div>

@@ -13,12 +13,14 @@ import {
   Shield,
   MapPin,
   Clock,
-  Battery
+  Battery,
+  UserPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import UnityWebGLViewer from "@/components/unity-webgl-viewer";
 import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
 
 export default function RoomDungeonPage() {
@@ -57,6 +59,31 @@ export default function RoomDungeonPage() {
         properties,
       });
       return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms", room?.id, "devices"] });
+    },
+  });
+
+  // Add participant mutation
+  const addParticipantMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/rooms/${room?.id}/participants/demo`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms", room?.id, "participants"] });
+    },
+  });
+
+  // Start biometric simulation
+  const startBiometricSimulation = useMutation({
+    mutationFn: async (participantId: number) => {
+      const response = await apiRequest("POST", `/api/rooms/${room?.id}/participants/${participantId}/simulate-biometrics`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms", room?.id, "biometrics"] });
     },
   });
 
@@ -148,28 +175,22 @@ export default function RoomDungeonPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 3D Room Visualization */}
         <div className="lg:col-span-2">
-          <Card className="tron-card h-96 mb-6">
-            <CardHeader>
-              <CardTitle className="text-accent">3D Room Visualization</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-red-800/20"></div>
-                <div className="relative text-center">
-                  <div className="w-16 h-16 border-2 border-accent rounded-full flex items-center justify-center mb-4 mx-auto tron-glow">
-                    <MapPin className="w-8 h-8 text-accent" />
-                  </div>
-                  <h3 className="text-lg font-semibold tron-text mb-2">Unity WebGL Viewer</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Interactive 3D dungeon environment with real-time participant tracking
-                  </p>
-                  <div className="mt-4 text-xs text-muted-foreground">
-                    Model: {room.modelPath || "dungeon_demo.glb"}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mb-6">
+            <UnityWebGLViewer
+              modelPath={room.modelPath || "/attached_assets/7_16_2025.glb"}
+              devices={devices}
+              participants={participants}
+              onDeviceClick={(device) => {
+                controlDeviceMutation.mutate({
+                  deviceId: device.id,
+                  status: device.status === "online" ? "offline" : "online",
+                });
+              }}
+              onParticipantClick={(participant) => {
+                setSelectedParticipant(participant.id);
+              }}
+            />
+          </div>
 
           {/* Device Controls */}
           <Card className="tron-card">
@@ -238,12 +259,25 @@ export default function RoomDungeonPage() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-sm">{participant.participantName}</span>
-                        <Badge
-                          variant={stressLevel === "high" ? "destructive" : stressLevel === "medium" ? "secondary" : "default"}
-                          className="text-xs"
-                        >
-                          {stressLevel}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge
+                            variant={stressLevel === "high" ? "destructive" : stressLevel === "medium" ? "secondary" : "default"}
+                            className="text-xs"
+                          >
+                            {stressLevel}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startBiometricSimulation.mutate(participant.id);
+                            }}
+                            className="tron-button text-xs px-2 py-1"
+                          >
+                            <Activity className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
                       
                       {biometric && (
@@ -258,7 +292,7 @@ export default function RoomDungeonPage() {
                           </div>
                           <div className="flex items-center">
                             <MapPin className="w-3 h-3 mr-1 text-green-500" />
-                            <span>({participant.positionX}, {participant.positionY})</span>
+                            <span>({participant.positionX?.toFixed(1)}, {participant.positionY?.toFixed(1)})</span>
                           </div>
                           <div className="flex items-center">
                             <Battery className="w-3 h-3 mr-1 text-yellow-500" />
@@ -280,6 +314,29 @@ export default function RoomDungeonPage() {
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No participants in room</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => addParticipantMutation.mutate()}
+                      className="tron-button mt-2"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Demo Participant
+                    </Button>
+                  </div>
+                )}
+                
+                {participants.length > 0 && (
+                  <div className="pt-3 border-t border-accent/30">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => addParticipantMutation.mutate()}
+                      className="tron-button w-full"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Another Participant
+                    </Button>
                   </div>
                 )}
               </div>
