@@ -134,6 +134,8 @@ export default function RealUnityWebGL({
                 if (participant) onParticipantClick(participant);
               } else if (data.type === 'debug') {
                 console.log('Unity Debug:', data.message);
+              } else if (data.type === 'unity_ready') {
+                console.log('Unity WebGL: Unity reports ready state');
               }
             } catch (error) {
               console.warn('Unity message parse error:', error);
@@ -147,7 +149,16 @@ export default function RealUnityWebGL({
           // Initialize enhanced 3D scene and load processed mesh data
           setTimeout(() => {
             try {
-              // First try to load processed mesh data
+              // Test Unity communication first
+              console.log('Unity WebGL: Testing Unity message system');
+              try {
+                instance.SendMessage('DungeonController', 'LoadProcessedMesh', 'test');
+                console.log('Unity WebGL: Test message sent successfully');
+              } catch (error) {
+                console.error('Unity WebGL: Test message failed:', error);
+              }
+              
+              // Now try to load processed mesh data
               console.log('Unity WebGL: Fetching processed mesh data from server');
               fetch('/api/glb-mesh')
                 .then(response => {
@@ -160,7 +171,12 @@ export default function RealUnityWebGL({
                   console.log('Unity WebGL: Creating actual 3D room from processed mesh vertices');
                   
                   // Send processed mesh data to Unity
-                  instance.SendMessage('DungeonController', 'LoadProcessedMesh', JSON.stringify(meshData));
+                  try {
+                    instance.SendMessage('DungeonController', 'LoadProcessedMesh', JSON.stringify(meshData));
+                    console.log('Unity WebGL: Mesh data sent to Unity successfully');
+                  } catch (error) {
+                    console.error('Unity WebGL: Failed to send mesh data to Unity:', error);
+                  }
                 })
                 .catch(error => {
                   console.error('Unity WebGL: Mesh data loading failed:', error);

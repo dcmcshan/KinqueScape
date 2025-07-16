@@ -52,6 +52,13 @@ public class DungeonController : MonoBehaviour
         // Initialize GLB loader for actual 3D mesh - this will create the room structure
         InitializeGLBLoader();
         
+        // Create startup test indicator to verify Unity is working
+        GameObject startupTest = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        startupTest.name = "UnityStartupTest";
+        startupTest.transform.position = new Vector3(-10, 8, 0);
+        startupTest.transform.localScale = Vector3.one * 3f;
+        startupTest.GetComponent<Renderer>().material.color = Color.magenta;
+        
         Debug.Log("Unity: 3D Dungeon environment setup complete");
     }
     
@@ -568,47 +575,38 @@ public class DungeonController : MonoBehaviour
     
     public void LoadProcessedMesh(string meshDataJson)
     {
+        // Create immediate indicator to show function is called
+        GameObject callIndicator = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        callIndicator.name = "LoadProcessedMeshCalled";
+        callIndicator.transform.position = new Vector3(5, 5, 0);
+        callIndicator.transform.localScale = Vector3.one * 3f;
+        callIndicator.GetComponent<Renderer>().material.color = Color.yellow;
+        
         SendMessageToReact("{\"type\":\"debug\",\"message\":\"LoadProcessedMesh called with " + meshDataJson.Length + " chars\"}");
-        try
+        
+        // Create simple test mesh instead of parsing complex JSON
+        GameObject testMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        testMesh.name = "ProcessedMeshTest";
+        testMesh.transform.position = new Vector3(0, 3, 0);
+        testMesh.transform.localScale = Vector3.one * 4f;
+        testMesh.GetComponent<Renderer>().material.color = Color.green;
+        
+        SendMessageToReact("{\"type\":\"debug\",\"message\":\"Created test mesh cube\"}");
+        
+        // Clear existing static room
+        GameObject staticRoom = GameObject.Find("StaticDungeonRoom");
+        if (staticRoom != null)
         {
-            // Debug: Show first part of JSON
-            string jsonPreview = meshDataJson.Length > 100 ? meshDataJson.Substring(0, 100) + "..." : meshDataJson;
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"JSON preview: " + jsonPreview + "\"}");
-            
-            // Parse the mesh data JSON
-            var meshData = JsonUtility.FromJson<ProcessedMeshData>(meshDataJson);
-            
-            if (meshData == null)
-            {
-                SendMessageToReact("{\"type\":\"debug\",\"message\":\"meshData is null after parsing\"}");
-                return;
-            }
-            
-            if (meshData.meshes == null)
-            {
-                SendMessageToReact("{\"type\":\"debug\",\"message\":\"meshes array is null\"}");
-                return;
-            }
-            
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Parsed " + meshData.meshes.Length + " meshes successfully\"}");
-            
-            // Create a bright indicator cube to show processing worked
-            GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            indicator.name = "MeshProcessingIndicator";
-            indicator.transform.position = new Vector3(0, 5, 0);
-            indicator.transform.localScale = Vector3.one * 2f;
-            indicator.GetComponent<Renderer>().material.color = Color.red;
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Created red indicator cube\"}");
-            
-            // Create room from actual mesh data
-            CreateRoomFromMeshData(meshData);
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Room creation completed\"}");
+            DestroyImmediate(staticRoom);
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Removed static room\"}");
         }
-        catch (System.Exception e)
+        
+        // Position camera to see test objects
+        if (mainCamera != null)
         {
-            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Error: " + e.Message + " Stack: " + e.StackTrace + "\"}");
-            // Fallback to GLB loading
-            InitializeGLBLoader();
+            mainCamera.transform.position = new Vector3(0, 10, 15);
+            mainCamera.transform.LookAt(new Vector3(0, 3, 0));
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Camera positioned to view test objects\"}");
         }
     }
     
