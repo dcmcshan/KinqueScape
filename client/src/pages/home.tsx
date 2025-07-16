@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, Play } from "lucide-react";
+import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, Play, Heart, Activity, Lock, Shield, Calendar } from "lucide-react";
 import logoPath from "@assets/C40089C9-F4D0-4D4E-8056-BC35F95B05D3_1752696036206.png";
 
 export default function HomePage() {
@@ -42,27 +42,27 @@ export default function HomePage() {
               className="w-24 h-24 object-contain logo-glow"
             />
           </div>
-          <Badge className="mb-4 bg-accent/10 text-accent border-accent">Launch Your Escape Room Empire</Badge>
+          <Badge className="mb-4 bg-accent/10 text-accent border-accent">Adult Entertainment Redefined</Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            Design, Plan & Execute
+            Intimate Adventures
             <br />
-            <span className="tron-text">Amazing 'Scapes</span>
+            <span className="tron-text">Beyond Imagination</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            The complete platform for escape room entrepreneurs. From initial concept to profitable business - 
-            design immersive experiences, create solid business plans, and manage your 'scapes with confidence.
+            Experience next-level intimacy with your partner through immersive escape room adventures. 
+            Smart toys, biometric monitoring, and 3D environments create unforgettable date nights and romantic experiences.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/design">
+            <Link href="/room/dungeon">
               <Button size="lg" className="w-full sm:w-auto tron-button">
                 <Play className="w-4 h-4 mr-2" />
-                Start Designing
+                Book Experience
               </Button>
             </Link>
             <Link href="/dash">
               <Button size="lg" variant="outline" className="w-full sm:w-auto tron-button">
                 <BarChart3 className="w-4 h-4 mr-2" />
-                View Demo
+                View Preview
               </Button>
             </Link>
           </div>
@@ -70,122 +70,201 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Everything You Need to Launch</h2>
-            <p className="text-xl text-gray-600">Three powerful tools in one integrated platform</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Revolutionary Intimate Experiences
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Where technology meets passion for unforgettable moments
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Design Studio */}
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <DraftingCompass className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle>Design Studio</CardTitle>
-                <CardDescription>Create immersive 'scape experiences</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Interactive room layout canvas
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Puzzle & clue management system
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Props and effects library
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Atmosphere & theme settings
-                  </li>
-                </ul>
-                <Link href="/design">
-                  <Button className="w-full mt-4">
-                    Explore Design Tools
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Business Planner */}
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader>
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                  <ChartLine className="w-6 h-6 text-secondary" />
-                </div>
-                <CardTitle>Business Planner</CardTitle>
-                <CardDescription>Build your escape room business</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Financial projections & budgeting
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Marketing strategy templates
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Operations & staffing plans
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Launch timeline management
-                  </li>
-                </ul>
-                <Link href="/plan">
-                  <Button className="w-full mt-4" variant="outline">
-                    Create Business Plan
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Dashboard */}
-            <Card className="border-2 hover:border-primary transition-colors">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Smart Toy Integration */}
+            <Card className="border-2 hover:border-accent transition-colors tron-border">
               <CardHeader>
                 <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
-                  <BarChart3 className="w-6 h-6 text-accent" />
+                  <Heart className="w-6 h-6 text-accent" />
                 </div>
-                <CardTitle>Live Dashboard</CardTitle>
-                <CardDescription>Monitor and execute your 'scapes</CardDescription>
+                <CardTitle className="tron-text">Smart Toy Integration</CardTitle>
+                <CardDescription>BLE and WiFi connected toys respond to your biometrics</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Real-time game monitoring
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Real-time biometric response
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Customer booking management
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Puzzle progress integration
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Performance analytics
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Partner synchronization
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Staff coordination tools
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Customizable intensity levels
                   </li>
                 </ul>
-                <Link href="/dash">
-                  <Button className="w-full mt-4" variant="outline">
-                    View Dashboard
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Biometric Monitoring */}
+            <Card className="border-2 hover:border-accent transition-colors tron-border">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Activity className="w-6 h-6 text-accent" />
+                </div>
+                <CardTitle className="tron-text">Biometric Monitoring</CardTitle>
+                <CardDescription>Real-time health tracking creates responsive experiences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Heart rate monitoring
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Stress level detection
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Arousal adaptation
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Safety monitoring
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Smart Restraints */}
+            <Card className="border-2 hover:border-accent transition-colors tron-border">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Lock className="w-6 h-6 text-accent" />
+                </div>
+                <CardTitle className="tron-text">Smart Restraints</CardTitle>
+                <CardDescription>Bluetooth locks with safety protocols</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    App-controlled release
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Emergency protocols
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Timer-based unlock
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Safeword integration
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Couples Adventures */}
+            <Card className="border-2 hover:border-accent transition-colors tron-border">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-accent" />
+                </div>
+                <CardTitle className="tron-text">Couples Adventures</CardTitle>
+                <CardDescription>Synchronized experiences for partners</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Remote partner control
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Shared challenges
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Communication games
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Trust building exercises
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Safety First */}
+            <Card className="border-2 hover:border-accent transition-colors tron-border">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-accent" />
+                </div>
+                <CardTitle className="tron-text">Safety First</CardTitle>
+                <CardDescription>Comprehensive safety monitoring and protocols</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Emergency protocols
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Safeword integration
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Health monitoring
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Instant emergency stop
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Date Night Packages */}
+            <Card className="border-2 hover:border-accent transition-colors tron-border">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                  <Calendar className="w-6 h-6 text-accent" />
+                </div>
+                <CardTitle className="tron-text">Date Night Packages</CardTitle>
+                <CardDescription>Curated romantic experiences for all preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Gentle intimacy adventures
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Intense BDSM scenarios
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Custom experience design
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-4 h-4 text-accent mr-2" />
+                    Progressive difficulty levels
+                  </li>
+                </ul>
               </CardContent>
             </Card>
           </div>
@@ -197,20 +276,20 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">Ready to Launch Your Escape Room Business?</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-4">Ready for an Unforgettable Experience?</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Experience the complete KinqueScape platform with our interactive demo featuring the Dungeon 'scape.
+            Book your intimate adventure in our immersive dungeon environment. Perfect for couples seeking next-level date nights with cutting-edge technology.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/design">
+            <Link href="/room/dungeon">
               <Button size="lg" className="w-full sm:w-auto tron-button">
-                Start Your First 'Scape
+                Book Dungeon Experience
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
-            <Link href="/plan">
+            <Link href="/dash">
               <Button size="lg" variant="outline" className="w-full sm:w-auto tron-button">
-                View Business Plan
+                Preview Experience
               </Button>
             </Link>
           </div>
@@ -230,7 +309,7 @@ export default function HomePage() {
                 />
                 <span className="text-lg font-bold">KinqueScape</span>
               </div>
-              <p className="text-gray-400">The complete platform for escape room entrepreneurs.</p>
+              <p className="text-gray-400">Revolutionary intimate escape room experiences.</p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Platform</h4>

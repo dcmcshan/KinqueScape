@@ -58,6 +58,24 @@ export default function DesignTabs({ onSave }: DesignTabsProps) {
       { id: "lock", label: "Lock", icon: "🔒" },
       { id: "trigger", label: "Trigger", icon: "👆" },
     ]},
+    { category: "Smart Devices", items: [
+      { id: "smart-vibrator", label: "Smart Vibrator", icon: "📳" },
+      { id: "smart-lock", label: "Smart Lock", icon: "🔐" },
+      { id: "ble-sensor", label: "BLE Sensor", icon: "📡" },
+      { id: "wifi-camera", label: "WiFi Camera", icon: "📹" },
+    ]},
+    { category: "Adult Props", items: [
+      { id: "restraints", label: "Restraints", icon: "⛓️" },
+      { id: "impact-toy", label: "Impact Toy", icon: "🏏" },
+      { id: "sensory-tool", label: "Sensory Tool", icon: "🪶" },
+      { id: "furniture-adult", label: "Adult Furniture", icon: "🛏️" },
+    ]},
+    { category: "Biometric", items: [
+      { id: "heart-monitor", label: "Heart Monitor", icon: "💓" },
+      { id: "stress-sensor", label: "Stress Sensor", icon: "📊" },
+      { id: "position-tracker", label: "Position Tracker", icon: "📍" },
+      { id: "emergency-stop", label: "Emergency Stop", icon: "🛑" },
+    ]},
   ];
 
   const puzzleLibrary = [

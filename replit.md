@@ -38,7 +38,7 @@ Preferred communication style: Simple, everyday language.
 - **Room Events**: Event logging for room activities and participant interactions
 
 #### Frontend Pages
-- **Home Page**: Marketing homepage with KinqueScape branding and Tron-style dark theme
+- **Home Page**: Participant-focused marketing homepage for adult entertainment experiences and date nights
 - **Design Page**: Interactive canvas for creating escape room layouts with drag-and-drop tools
 - **Plan Page**: Displays the actual KinqueScape business plan focused on dungeon demo installation
 - **Dashboard Page**: Interactive dashboard for monitoring room statistics and participant data
@@ -103,6 +103,9 @@ Preferred communication style: Simple, everyday language.
 - **ARCHITECTURAL**: Angled bottom corners, medieval windows with iron bars, proper stone walls
 - **ENHANCED**: Real-time 3D shadows, lighting, and device/participant positioning
 - **WORKING**: 3D room now properly displays dungeon architecture with user-specified dimensions
+- **UPDATED 1/16/2025**: Homepage marketing refocused for participants and date nights rather than franchise/DIY
+- **ADDED 1/16/2025**: Smart toy categories and BLE/WiFi devices to design tool props system
+- **RESEARCHED 1/16/2025**: Smart locks and restraints collection with Amazon product links
 
 ### Architecture Focus
 The application follows a clean architecture pattern with clear separation between presentation, business logic, and data layers. The shared schema approach ensures type safety across the full stack while the modular component structure supports easy feature additions and modifications.
