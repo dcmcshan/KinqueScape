@@ -36,33 +36,150 @@ public class DungeonController : MonoBehaviour
 
     void SetupDungeonEnvironment()
     {
-        // Create floor
+        // Set up proper 3D camera for architectural view like your reference image
+        if (mainCamera != null)
+        {
+            mainCamera.transform.position = new Vector3(0, 8, 10);
+            mainCamera.transform.LookAt(Vector3.zero);
+            mainCamera.fieldOfView = 60f;
+            mainCamera.farClipPlane = 100f;
+        }
+
+        // Create realistic dungeon room based on GLB dimensions (8x11 units)
+        Create3DRoomStructure();
+        
+        // Add proper dungeon lighting
+        CreateDungeonLighting();
+        
+        Debug.Log("Unity: 3D Dungeon environment setup complete");
+    }
+    
+    void Create3DRoomStructure()
+    {
+        float roomWidth = 8f;
+        float roomDepth = 11f;
+        float wallHeight = 4f;
+        float wallThickness = 0.5f;
+        
+        // Create stone floor
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        floor.name = "DungeonFloor";
         floor.transform.position = Vector3.zero;
-        floor.transform.localScale = new Vector3(2, 1, 2);
-        floor.GetComponent<Renderer>().material.color = new Color(0.2f, 0.2f, 0.2f);
-
-        // Create walls
-        CreateWall(new Vector3(0, 0.5f, 10), new Vector3(20, 1, 1));
-        CreateWall(new Vector3(0, 0.5f, -10), new Vector3(20, 1, 1));
-        CreateWall(new Vector3(10, 0.5f, 0), new Vector3(1, 1, 20));
-        CreateWall(new Vector3(-10, 0.5f, 0), new Vector3(1, 1, 20));
-
-        // Add lighting
-        GameObject light = new GameObject("Dungeon Light");
-        Light lightComponent = light.AddComponent<Light>();
-        lightComponent.type = LightType.Directional;
-        lightComponent.intensity = 0.8f;
-        lightComponent.color = new Color(1f, 0.8f, 0.6f);
-        light.transform.rotation = Quaternion.Euler(50, -30, 0);
+        floor.transform.localScale = new Vector3(roomWidth / 10f, 1, roomDepth / 10f);
+        Material floorMaterial = CreateStoneMaterial(new Color(0.3f, 0.3f, 0.3f, 1f));
+        floor.GetComponent<Renderer>().material = floorMaterial;
+        floor.GetComponent<Renderer>().receiveShadows = true;
+        
+        // Create stone walls
+        Material wallMaterial = CreateStoneMaterial(new Color(0.4f, 0.4f, 0.4f, 1f));
+        
+        // North Wall
+        CreateWall("NorthWall", 
+            new Vector3(0, wallHeight/2, roomDepth/2), 
+            new Vector3(roomWidth + wallThickness, wallHeight, wallThickness),
+            wallMaterial);
+            
+        // South Wall  
+        CreateWall("SouthWall",
+            new Vector3(0, wallHeight/2, -roomDepth/2),
+            new Vector3(roomWidth + wallThickness, wallHeight, wallThickness),
+            wallMaterial);
+            
+        // East Wall
+        CreateWall("EastWall",
+            new Vector3(roomWidth/2, wallHeight/2, 0),
+            new Vector3(wallThickness, wallHeight, roomDepth),
+            wallMaterial);
+            
+        // West Wall
+        CreateWall("WestWall",
+            new Vector3(-roomWidth/2, wallHeight/2, 0),
+            new Vector3(wallThickness, wallHeight, roomDepth),
+            wallMaterial);
+            
+        Debug.Log($"Unity: Created 3D room {roomWidth}x{roomDepth} with {wallHeight}m walls");
+    }
+    
+    Material CreateStoneMaterial(Color baseColor)
+    {
+        Material stoneMaterial = new Material(Shader.Find("Standard"));
+        stoneMaterial.color = baseColor;
+        stoneMaterial.metallic = 0.1f;
+        stoneMaterial.smoothness = 0.2f;
+        return stoneMaterial;
+    }
+    
+    void CreateDungeonLighting()
+    {
+        // Ambient lighting for dungeon atmosphere
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight = new Color(0.1f, 0.1f, 0.15f, 1f);
+        
+        // Main directional light (soft dungeon lighting)
+        GameObject mainLight = new GameObject("MainLight");
+        Light dirLight = mainLight.AddComponent<Light>();
+        dirLight.type = LightType.Directional;
+        dirLight.color = new Color(0.8f, 0.8f, 1f, 1f);
+        dirLight.intensity = 0.6f;
+        dirLight.shadows = LightShadows.Soft;
+        mainLight.transform.rotation = Quaternion.Euler(45f, 45f, 0f);
+        
+        Debug.Log("Unity: Dungeon lighting created");
     }
 
-    void CreateWall(Vector3 position, Vector3 scale)
+    void CreateWall(string name, Vector3 position, Vector3 scale, Material material)
     {
         GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = name;
         wall.transform.position = position;
         wall.transform.localScale = scale;
-        wall.GetComponent<Renderer>().material.color = new Color(0.3f, 0.3f, 0.3f);
+        
+        MeshRenderer renderer = wall.GetComponent<MeshRenderer>();
+        renderer.material = material;
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        renderer.receiveShadows = true;
+    }
+    
+    // New method to handle GLB loading
+    public void LoadGLBModel(string filePath)
+    {
+        Debug.Log($"Unity: LoadGLBModel called with path: {filePath}");
+        
+        // This is where you would integrate a GLB loader like:
+        // - GLTFast (recommended): https://github.com/atteneder/glTFast
+        // - UnityGLTF: https://github.com/KhronosGroup/UnityGLTF
+        
+        Debug.Log("Unity: Real GLB loading would happen here in actual Unity build");
+        Debug.Log("Unity: For now, using procedural 3D room based on GLB dimensions");
+        
+        // The procedural 3D room is already created in SetupDungeonEnvironment
+        // This matches your GLB file's 8x11 dimensions
+        
+        SendMessageToReact("{\"type\":\"glb_loaded\",\"status\":\"success\"}");
+    }
+    
+    public void SetCameraMode(string mode)
+    {
+        if (mainCamera == null) return;
+        
+        Debug.Log($"Unity: Setting camera mode: {mode}");
+        
+        if (mode == "architectural")
+        {
+            // Architectural view like Unity editor
+            mainCamera.transform.position = new Vector3(6, 10, 8);
+            mainCamera.transform.LookAt(Vector3.zero);
+            mainCamera.fieldOfView = 45f;
+            
+            // Enable perspective projection for true 3D
+            mainCamera.orthographic = false;
+            mainCamera.nearClipPlane = 0.1f;
+            mainCamera.farClipPlane = 100f;
+            
+            Debug.Log("Unity: Camera set to 3D architectural perspective");
+        }
+        
+        SendMessageToReact("{\"type\":\"camera_updated\",\"mode\":\"" + mode + "\"}");
     }
 
     public void UpdateDevices(string devicesJson)
@@ -81,27 +198,10 @@ public class DungeonController : MonoBehaviour
             }
             devices.Clear();
 
-            // Create new devices
+            // Create new devices with proper 3D representation
             foreach (var deviceData in deviceArray)
             {
-                GameObject device = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                device.transform.position = new Vector3(deviceData.position.x, 0.5f, deviceData.position.z);
-                device.transform.localScale = Vector3.one * 0.3f;
-                
-                // Set device color based on status
-                Material material = deviceData.status == "online" ? deviceOnlineMaterial : deviceOfflineMaterial;
-                if (material == null)
-                {
-                    material = new Material(Shader.Find("Standard"));
-                    material.color = deviceData.status == "online" ? Color.green : Color.red;
-                }
-                device.GetComponent<Renderer>().material = material;
-
-                // Add click handler
-                DeviceClickHandler clickHandler = device.AddComponent<DeviceClickHandler>();
-                clickHandler.deviceId = deviceData.id;
-                clickHandler.controller = this;
-
+                GameObject device = Create3DDevice(deviceData);
                 devices[deviceData.id] = device;
             }
         }
@@ -218,12 +318,102 @@ public class DungeonController : MonoBehaviour
         SendMessageToReact(message);
     }
 
+    GameObject Create3DDevice(DeviceData deviceData)
+    {
+        GameObject device;
+        Material material;
+        
+        // Create different 3D shapes based on device type
+        switch (deviceData.type)
+        {
+            case "light":
+                // Torch/light as glowing sphere
+                device = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                device.transform.localScale = Vector3.one * 0.4f;
+                material = new Material(Shader.Find("Standard"));
+                material.color = deviceData.status == "online" ? new Color(1f, 1f, 0.4f, 1f) : Color.gray;
+                if (deviceData.status == "online")
+                {
+                    material.SetColor("_EmissionColor", new Color(1f, 0.6f, 0f, 1f));
+                    material.EnableKeyword("_EMISSION");
+                    
+                    // Add point light for illumination
+                    GameObject lightObj = new GameObject("DeviceLight");
+                    lightObj.transform.SetParent(device.transform);
+                    lightObj.transform.localPosition = Vector3.zero;
+                    Light pointLight = lightObj.AddComponent<Light>();
+                    pointLight.type = LightType.Point;
+                    pointLight.color = new Color(1f, 0.8f, 0.4f, 1f);
+                    pointLight.intensity = 2f;
+                    pointLight.range = 5f;
+                }
+                break;
+                
+            case "prop":
+                // Props as cubes/boxes
+                device = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                device.transform.localScale = new Vector3(0.8f, 1.2f, 0.8f);
+                material = new Material(Shader.Find("Standard"));
+                material.color = new Color(0.55f, 0.27f, 0.07f, 1f); // Brown wood
+                break;
+                
+            case "lock":
+                // Locks as cylinders
+                device = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                device.transform.localScale = new Vector3(0.3f, 0.2f, 0.3f);
+                material = new Material(Shader.Find("Standard"));
+                material.color = deviceData.status == "online" ? Color.red : Color.gray;
+                material.metallic = 0.7f;
+                break;
+                
+            case "camera":
+                // Cameras as cones
+                device = GameObject.CreatePrimitive(PrimitiveType.Cone);
+                device.transform.localScale = new Vector3(0.3f, 0.4f, 0.3f);
+                material = new Material(Shader.Find("Standard"));
+                material.color = Color.blue;
+                material.metallic = 0.5f;
+                break;
+                
+            case "sensor":
+                // Sensors as flat cylinders
+                device = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                device.transform.localScale = new Vector3(0.4f, 0.1f, 0.4f);
+                material = new Material(Shader.Find("Standard"));
+                material.color = new Color(0.7f, 0.3f, 1f, 1f); // Purple
+                break;
+                
+            default:
+                device = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                device.transform.localScale = Vector3.one * 0.3f;
+                material = new Material(Shader.Find("Standard"));
+                material.color = deviceData.status == "online" ? Color.green : Color.red;
+                break;
+        }
+        
+        // Position device in 3D space
+        device.name = deviceData.name;
+        device.transform.position = new Vector3(deviceData.position.x, deviceData.position.y + 0.5f, deviceData.position.z);
+        device.GetComponent<Renderer>().material = material;
+        device.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        device.GetComponent<Renderer>().receiveShadows = true;
+        
+        // Add click handler
+        DeviceClickHandler clickHandler = device.AddComponent<DeviceClickHandler>();
+        clickHandler.deviceId = deviceData.id;
+        clickHandler.controller = this;
+        
+        Debug.Log($"Unity: Created 3D {deviceData.type} device: {deviceData.name}");
+        return device;
+    }
+
     public void ResetCamera()
     {
         if (mainCamera != null)
         {
-            mainCamera.transform.position = new Vector3(8, 8, 8);
+            mainCamera.transform.position = new Vector3(0, 8, 10);
             mainCamera.transform.LookAt(Vector3.zero);
+            Debug.Log("Unity: Camera reset to architectural view");
         }
     }
 

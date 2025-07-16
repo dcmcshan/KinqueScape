@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import UnityWebGLComponent from "@/components/unity-webgl-component";
+import RealUnityWebGL from "@/components/real-unity-webgl";
 import Minimap2D from "@/components/minimap-2d";
 import ThreeJS3DViewer from "@/components/threejs-3d-viewer";
 import type { Room, RoomParticipant, RoomDevice, BiometricData } from "@shared/schema";
@@ -180,7 +180,7 @@ export default function RoomDungeonPage() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Unity WebGL 3D Viewer with Your Custom Space */}
             <div className="xl:col-span-2">
-              <UnityWebGLComponent
+              <RealUnityWebGL
                 devices={devices}
                 participants={participants}
                 onDeviceClick={(device) => {
