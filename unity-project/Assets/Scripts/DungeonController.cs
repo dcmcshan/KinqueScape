@@ -577,29 +577,155 @@ public class DungeonController : MonoBehaviour
     {
         Debug.Log("Unity: CreateTestObject called with: " + testType);
         
+        // Clear existing room to make space for test
+        GameObject existingRoom = GameObject.Find("StaticDungeonRoom");
+        if (existingRoom != null)
+        {
+            DestroyImmediate(existingRoom);
+            Debug.Log("Unity: Cleared existing static room");
+        }
+        
         // Create bright test object that's easy to see
         GameObject testObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         testObj.name = "CommunicationTest_" + testType;
-        testObj.transform.position = new Vector3(0, 12, 0);
-        testObj.transform.localScale = Vector3.one * 6f;
+        testObj.transform.position = new Vector3(0, 5, 0);
+        testObj.transform.localScale = Vector3.one * 8f;
         testObj.GetComponent<Renderer>().material.color = Color.red;
         
-        Debug.Log("Unity: Created red test sphere at (0, 12, 0)");
+        // Position camera to see the test object
+        if (mainCamera != null)
+        {
+            mainCamera.transform.position = new Vector3(0, 5, 15);
+            mainCamera.transform.LookAt(new Vector3(0, 5, 0));
+            Debug.Log("Unity: Camera positioned to view test object");
+        }
+        
+        Debug.Log("Unity: Created large red test sphere at (0, 5, 0)");
+        SendMessageToReact("{\"type\":\"debug\",\"message\":\"Red test sphere created successfully\"}");
     }
     
     public void LoadMeshInfo(string meshInfoJson)
     {
-        Debug.Log("Unity: LoadMeshInfo called");
+        Debug.Log("Unity: LoadMeshInfo called with: " + meshInfoJson);
         
-        // Create indicator that mesh info was received
-        GameObject meshIndicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        meshIndicator.name = "MeshInfoReceived";
-        meshIndicator.transform.position = new Vector3(8, 12, 0);
-        meshIndicator.transform.localScale = Vector3.one * 6f;
-        meshIndicator.GetComponent<Renderer>().material.color = Color.green;
+        // Parse the mesh info
+        try
+        {
+            var meshInfo = JsonUtility.FromJson<SimpleMeshInfo>(meshInfoJson);
+            Debug.Log("Unity: Parsed mesh info - " + meshInfo.meshCount + " meshes");
+            
+            // Create simple room representation based on bounding box
+            CreateSimpleRoomFromBounds(meshInfo.boundingBox);
+            
+            // Create indicator that mesh info was processed
+            GameObject meshIndicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            meshIndicator.name = "MeshInfoProcessed";
+            meshIndicator.transform.position = new Vector3(0, 8, 0);
+            meshIndicator.transform.localScale = Vector3.one * 3f;
+            meshIndicator.GetComponent<Renderer>().material.color = Color.green;
+            
+            Debug.Log("Unity: Created simple room from GLB bounds and green indicator cube");
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"GLB mesh data processed - simple room created\"}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Unity: Failed to parse mesh info: " + e.Message);
+            SendMessageToReact("{\"type\":\"debug\",\"message\":\"Mesh info parsing failed: " + e.Message + "\"}");
+        }
+    }
+    
+    [System.Serializable]
+    public class SimpleMeshInfo
+    {
+        public int meshCount;
+        public BoundingBoxData boundingBox;
+    }
+    
+    [System.Serializable]
+    public class BoundingBoxData
+    {
+        public Vector3Data min;
+        public Vector3Data max;
+    }
+    
+    [System.Serializable]
+    public class Vector3Data
+    {
+        public float x, y, z;
         
-        Debug.Log("Unity: Created green cube - mesh info received");
-        Debug.Log("Unity: Mesh info data: " + meshInfoJson);
+        public Vector3 ToVector3()
+        {
+            return new Vector3(x, y, z);
+        }
+    }
+    
+    void CreateSimpleRoomFromBounds(BoundingBoxData bounds)
+    {
+        if (bounds == null) return;
+        
+        Vector3 min = bounds.min.ToVector3();
+        Vector3 max = bounds.max.ToVector3();
+        Vector3 center = (min + max) / 2f;
+        Vector3 size = max - min;
+        
+        Debug.Log("Unity: Creating room from bounds - Center: " + center + ", Size: " + size);
+        
+        // Clear existing room
+        GameObject existingRoom = GameObject.Find("StaticDungeonRoom");
+        if (existingRoom != null)
+        {
+            DestroyImmediate(existingRoom);
+        }
+        
+        // Create new room parent
+        GameObject roomParent = new GameObject("GLBBasedRoom");
+        
+        // Create floor
+        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        floor.name = "GLBFloor";
+        floor.transform.position = new Vector3(center.x, min.y, center.z);
+        floor.transform.localScale = new Vector3(size.x / 10f, 1, size.z / 10f);
+        floor.transform.SetParent(roomParent.transform);
+        floor.GetComponent<Renderer>().material.color = new Color(0.3f, 0.3f, 0.3f, 1f);
+        
+        // Create walls based on actual GLB dimensions
+        CreateWallFromBounds("NorthWall", min, max, Vector3.forward);
+        CreateWallFromBounds("SouthWall", min, max, Vector3.back);
+        CreateWallFromBounds("EastWall", min, max, Vector3.right);
+        CreateWallFromBounds("WestWall", min, max, Vector3.left);
+        
+        // Position camera to view the room
+        if (mainCamera != null)
+        {
+            Vector3 cameraPos = center + new Vector3(size.x, size.y * 2f, size.z * 1.5f);
+            mainCamera.transform.position = cameraPos;
+            mainCamera.transform.LookAt(center);
+            Debug.Log("Unity: Camera positioned to view GLB-based room");
+        }
+    }
+    
+    void CreateWallFromBounds(string name, Vector3 min, Vector3 max, Vector3 direction)
+    {
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = name;
+        
+        Vector3 center = (min + max) / 2f;
+        Vector3 size = max - min;
+        
+        if (direction == Vector3.forward || direction == Vector3.back)
+        {
+            // North/South walls
+            wall.transform.position = new Vector3(center.x, center.y, direction == Vector3.forward ? max.z : min.z);
+            wall.transform.localScale = new Vector3(size.x, size.y, 0.2f);
+        }
+        else
+        {
+            // East/West walls
+            wall.transform.position = new Vector3(direction == Vector3.right ? max.x : min.x, center.y, center.z);
+            wall.transform.localScale = new Vector3(0.2f, size.y, size.z);
+        }
+        
+        wall.GetComponent<Renderer>().material.color = new Color(0.5f, 0.5f, 0.5f, 1f);
     }
     
     public void GLBLoadSuccess(string message)

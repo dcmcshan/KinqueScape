@@ -143,20 +143,42 @@ export default function RealUnityWebGL({
           };
           
           console.log('Unity WebGL: REAL 3D Unity instance created successfully!');
+          
+          // Load the Unity override script for direct room creation
+          const script = document.createElement('script');
+          script.src = '/unity-build/unity-room-override.js';
+          script.onload = () => {
+            console.log('Unity WebGL: Override script loaded');
+            if (window.UnityRoomOverride) {
+              setTimeout(() => {
+                window.UnityRoomOverride.createDungeonRoom(instance);
+                window.UnityRoomOverride.forceRender(instance);
+              }, 1000);
+            }
+          };
+          document.head.appendChild(script);
+          
           setIsLoaded(true);
           setIsInitialized(true);
           
           // Initialize enhanced 3D scene and load processed mesh data
           setTimeout(() => {
             try {
-              // Create a simple test directly in Unity to verify communication
-              console.log('Unity WebGL: Creating communication test indicator');
+              // Force Unity to create visible objects using direct Unity API calls
+              console.log('Unity WebGL: Forcing direct Unity object creation');
               try {
-                // Call a simple function that should create a visible object
-                instance.SendMessage('DungeonController', 'CreateTestObject', 'communication_test');
-                console.log('Unity WebGL: Test object creation message sent');
+                // Use Unity's Module.unityInstance API directly if available
+                if (window.unityInstance) {
+                  // Try to call Unity's internal mesh creation functions
+                  window.unityInstance.SendMessage('Main Camera', 'SetActive', 'true');
+                  console.log('Unity WebGL: Direct camera activation');
+                }
+                
+                // Call functions that should exist in the compiled build
+                instance.SendMessage('DungeonController', 'CreateTestObject', 'direct_test');
+                console.log('Unity WebGL: Direct test object message sent');
               } catch (error) {
-                console.error('Unity WebGL: Test object creation failed:', error);
+                console.error('Unity WebGL: Direct object creation failed:', error);
               }
               
               // Load actual mesh data with simpler approach
