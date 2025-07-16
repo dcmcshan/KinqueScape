@@ -146,10 +146,10 @@ export default function ThreeRoomRenderer({
 }
 
 function createDungeonRoom(scene: THREE.Scene) {
-  // Create dungeon floor with angled bottom corner
+  // Create dungeon floor with stone texture
   const floorGeometry = new THREE.PlaneGeometry(5.9, 6.4);
   const floorMaterial = new THREE.MeshLambertMaterial({ 
-    color: 0x4a4a4a,
+    color: 0x3a3a3a,
     side: THREE.DoubleSide 
   });
   const floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -158,16 +158,37 @@ function createDungeonRoom(scene: THREE.Scene) {
   floor.receiveShadow = true;
   scene.add(floor);
 
-  // Create walls with proper dungeon shape
+  // Add stone floor tiles for detail
+  for (let x = -2.5; x <= 2.5; x += 0.5) {
+    for (let z = -3; z <= 3; z += 0.5) {
+      const tileGeo = new THREE.PlaneGeometry(0.45, 0.45);
+      const tileMat = new THREE.MeshLambertMaterial({ 
+        color: 0x2a2a2a + Math.random() * 0x202020 
+      });
+      const tile = new THREE.Mesh(tileGeo, tileMat);
+      tile.rotation.x = -Math.PI / 2;
+      tile.position.set(x, -1.49, z);
+      tile.receiveShadow = true;
+      scene.add(tile);
+    }
+  }
+
+  // Create walls with proper dungeon shape and stone texture
   const wallHeight = 2.9;
-  const wallThickness = 0.1;
+  const wallThickness = 0.2;
+
+  // Enhanced stone wall material
+  const wallMaterial = new THREE.MeshLambertMaterial({ 
+    color: 0x5a4a3a,
+    roughness: 0.8 
+  });
 
   // Front wall
   const frontWallGeo = new THREE.BoxGeometry(5.9, wallHeight, wallThickness);
-  const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
   const frontWall = new THREE.Mesh(frontWallGeo, wallMaterial);
   frontWall.position.set(0, 0, 3.2);
   frontWall.castShadow = true;
+  frontWall.receiveShadow = true;
   scene.add(frontWall);
 
   // Left wall
