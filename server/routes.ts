@@ -728,6 +728,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Venice AI Chat endpoint
+  app.post("/api/chat/venice", async (req, res) => {
+    try {
+      const { message, conversation_history } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Check if Venice AI API key is configured
+      const veniceApiKey = process.env.VENICE_API_KEY;
+      if (!veniceApiKey) {
+        return res.status(503).json({ 
+          error: "Venice AI API key not configured",
+          response: "Venice AI integration requires an API key. Please add your VENICE_API_KEY to environment variables. You can get one from https://venice.ai"
+        });
+      }
+
+      // Prepare messages for Venice AI
+      const messages = [
+        {
+          role: "system",
+          content: `You are an AI assistant specialized in KinqueScape, an adult-themed escape room platform. You help with:
+
+1. Escape room design and layout optimization
+2. Adult entertainment technology integration  
+3. Smart device connectivity (BLE, WiFi, NFC)
+4. Biometric monitoring and safety protocols
+5. Adult toy and restraint system integration
+6. Business strategy for adult entertainment venues
+7. Voyeurism features and monetization models
+8. Unity 3D visualization and Three.js integration
+
+Be professional, knowledgeable, and provide practical advice for building immersive adult entertainment experiences. Focus on technology, safety, and business aspects.`
+        },
+        ...conversation_history.slice(-10), // Include recent conversation context
+        {
+          role: "user",
+          content: message
+        }
+      ];
+
+      // Call Venice AI API
+      const veniceResponse = await fetch('https://api.venice.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${veniceApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b',
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 1000,
+          stream: false
+        })
+      });
+
+      if (!veniceResponse.ok) {
+        const errorText = await veniceResponse.text();
+        console.error('Venice AI API error:', errorText);
+        return res.status(veniceResponse.status).json({ 
+          error: "Venice AI API error",
+          response: "I'm having trouble connecting to Venice AI. Please check your API key and try again."
+        });
+      }
+
+      const veniceData = await veniceResponse.json();
+      
+      if (!veniceData.choices || !veniceData.choices[0] || !veniceData.choices[0].message) {
+        return res.status(500).json({ 
+          error: "Invalid response from Venice AI",
+          response: "I received an unexpected response from Venice AI. Please try again."
+        });
+      }
+
+      res.json({ 
+        response: veniceData.choices[0].message.content,
+        model: veniceData.model,
+        usage: veniceData.usage
+      });
+
+    } catch (error) {
+      console.error('Venice AI chat error:', error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        response: "I'm experiencing technical difficulties. Please try again in a moment."
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Start automatic biometric simulation

@@ -11,6 +11,7 @@ import DashboardPage from "@/pages/dashboard";
 import RoomDungeonPage from "@/pages/room-dungeon";
 import ScapesPage from "@/pages/scapes";
 import PropsPage from "@/pages/props";
+import ChatPage from "@/pages/chat";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
         <Route path="/dash" component={() => <AppLayout><DashboardPage /></AppLayout>} />
         <Route path="/scapes" component={() => <AppLayout><ScapesPage /></AppLayout>} />
         <Route path="/props" component={() => <AppLayout><PropsPage /></AppLayout>} />
+        <Route path="/chat" component={() => <AppLayout><ChatPage /></AppLayout>} />
         <Route path="/room/dungeon" component={() => <AppLayout><RoomDungeonPage /></AppLayout>} />
         <Route component={NotFound} />
       </Switch>
