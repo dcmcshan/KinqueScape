@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, Play } from "lucide-react";
-import logoPath from "@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png";
+const logoPath = "/kinquescape-logo-red.svg";
 
 export default function HomePage() {
   return (

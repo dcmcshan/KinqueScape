@@ -127,27 +127,27 @@ export default function RoomDungeonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tron-text">{room.name}</h1>
-            <p className="text-muted-foreground">Unity 3D Room Control & Biometric Monitoring</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tron-text">{room.name}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Unity 3D Room Control & Biometric Monitoring</p>
           </div>
-          <div className="flex items-center space-x-3">
-            <Badge variant={roomStatus === "active" ? "default" : "secondary"}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+            <Badge variant={roomStatus === "active" ? "default" : "secondary"} className="text-xs sm:text-sm">
               {roomStatus.toUpperCase()}
             </Badge>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setRoomStatus("active")}
                 disabled={roomStatus === "active"}
-                className="tron-button"
+                className="tron-button text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Play className="w-4 h-4 mr-2" />
+                <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Start
               </Button>
               <Button
@@ -155,18 +155,18 @@ export default function RoomDungeonPage() {
                 size="sm"
                 onClick={() => setRoomStatus("paused")}
                 disabled={roomStatus !== "active"}
-                className="tron-button"
+                className="tron-button text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Pause className="w-4 h-4 mr-2" />
+                <Pause className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Pause
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setRoomStatus("completed")}
-                className="tron-button"
+                className="tron-button text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Square className="w-4 h-4 mr-2" />
+                <Square className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 End
               </Button>
             </div>
@@ -174,9 +174,9 @@ export default function RoomDungeonPage() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-3 sm:space-y-4 lg:space-y-6">
         {/* Unity 3D Viewer - Full Width Priority */}
-        <div className="w-full">
+        <div className="w-full -mx-2 sm:mx-0">
           <RealUnityWebGL
             devices={devices}
             participants={participants}

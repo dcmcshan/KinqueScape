@@ -263,25 +263,25 @@ export default function RealUnityWebGL({
 
   return (
     <Card className="bg-gray-900 border-red-900">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-red-400 flex items-center gap-2">
-            <Eye className="h-5 w-5" />
+      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+          <CardTitle className="text-red-400 flex items-center gap-2 text-lg sm:text-xl">
+            <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
             Unity WebGL 3D Viewer
           </CardTitle>
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="text-white border-white">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <Badge variant="outline" className="text-white border-white text-xs sm:text-sm">
               <Users className="h-3 w-3 mr-1" />
               {participants.length}
             </Badge>
             <Badge 
               variant={onlineDevices === totalDevices ? "default" : "destructive"}
-              className="bg-green-600"
+              className="bg-green-600 text-xs sm:text-sm"
             >
               {onlineDevices}/{totalDevices} Online
             </Badge>
             {isLoaded && (
-              <Badge variant="outline" className="text-green-400 border-green-400">
+              <Badge variant="outline" className="text-green-400 border-green-400 text-xs sm:text-sm">
                 Unity Active
               </Badge>
             )}
@@ -337,11 +337,11 @@ export default function RealUnityWebGL({
         </div>
       </CardHeader>
       
-      <CardContent className="p-4">
+      <CardContent className="p-2 sm:p-4">
         <div className="relative">
           <canvas
             ref={canvasRef}
-            className="w-full h-[60vh] min-h-[400px] max-h-[600px] bg-black rounded border-2 border-gray-700"
+            className="w-full h-[50vh] sm:h-[60vh] min-h-[300px] sm:min-h-[400px] max-h-[500px] sm:max-h-[600px] bg-black rounded border-2 border-gray-700"
             style={{ 
               display: 'block',
               aspectRatio: '16/9'
