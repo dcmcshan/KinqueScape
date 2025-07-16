@@ -32,21 +32,20 @@ export default function PlanPage() {
               <h2 className="text-2xl font-bold tron-text mb-4">Executive Summary</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  KinqueScape revolutionizes the escape room industry by integrating cutting-edge biometric 
-                  monitoring technology with immersive 3D environments. Our initial focus is a comprehensive 
-                  dungeon-themed demo installation that showcases the platform's capabilities through real-time 
-                  heart rate, HRV, and positioning data via AmazFit Active 2 smartwatches.
+                  KinqueScape revolutionizes adult entertainment through immersive, technology-enhanced intimate experiences. 
+                  Our platform integrates biometric monitoring, smart adult toys, and interactive environments to create 
+                  personalized sensual adventures. The flagship dungeon demonstration facility showcases our technology's 
+                  potential through real-time physiological monitoring via AmazFit Active 2 smartwatches and app-controlled devices.
                 </p>
                 <p>
-                  The demo installation combines Unity-based 3D visualization with comprehensive room management 
-                  tools, enabling operators to monitor participant stress levels, optimize puzzle difficulty 
-                  in real-time, and create personalized experiences. This proof-of-concept will demonstrate 
-                  the technology's potential to research institutions, entertainment venues, and escape room operators.
+                  Our comprehensive research and development program includes acquiring and mastering over 50 adult toys and devices, 
+                  studying their interfaces (BLE, WiFi, NFC, QR codes), and developing integrated control systems. This hands-on 
+                  approach ensures we understand every aspect of the technology before deploying it in customer experiences.
                 </p>
                 <p>
-                  Following successful demo deployment, expansion will include franchising opportunities 
-                  and DIY installation packages, targeting the growing $1.8B escape room market with 
-                  technology-enhanced experiences that provide unprecedented insight into participant engagement.
+                  The business model focuses on premium adult experience centers, franchise opportunities, and technology licensing 
+                  to established adult entertainment venues. We target the intersection of the $15B adult toy market and the 
+                  growing experience economy, creating a new category of data-driven intimate entertainment.
                 </p>
               </div>
             </div>
