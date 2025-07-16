@@ -49,6 +49,9 @@
               } else if (methodName === 'ZoomOut') {
                 console.log('Unity: Zooming out');
                 redrawScene(canvas);
+              } else if (methodName === 'RefreshLighting') {
+                console.log('Unity: Refreshing lighting effects');
+                redrawScene(canvas);
               }
             },
             
@@ -118,11 +121,19 @@
       ctx.stroke();
     }
     
-    // Draw title
+    // Draw title and lighting info
     ctx.fillStyle = '#ff0040';
     ctx.font = '20px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('Unity WebGL Dungeon Environment', canvas.width / 2, 30);
+    
+    // Count and display light sources
+    var lightCount = currentDevices.filter(function(device) {
+      return device.type === 'light' && device.status === 'online';
+    }).length;
+    ctx.fillStyle = '#ffdd44';
+    ctx.font = '14px Arial';
+    ctx.fillText(lightCount + ' Light Sources Active', canvas.width / 2, 50);
     
     // Draw devices
     currentDevices.forEach(function(device) {
@@ -152,11 +163,48 @@
     var x = (device.position.x / 10) * canvasWidth * 0.8 + canvasWidth * 0.1;
     var y = (device.position.z / 10) * canvasHeight * 0.8 + canvasHeight * 0.1;
     
-    // Draw device circle
-    ctx.beginPath();
-    ctx.arc(x, y, 8, 0, 2 * Math.PI);
-    ctx.fillStyle = device.status === 'online' ? '#00ff00' : '#ff0000';
-    ctx.fill();
+    // Special handling for light sources
+    if (device.type === 'light') {
+      // Draw light glow effect
+      var gradient = ctx.createRadialGradient(x, y, 0, x, y, 25);
+      gradient.addColorStop(0, 'rgba(255, 200, 100, 0.8)');
+      gradient.addColorStop(0.5, 'rgba(255, 150, 50, 0.4)');
+      gradient.addColorStop(1, 'rgba(255, 100, 0, 0.1)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x - 25, y - 25, 50, 50);
+      
+      // Draw torch/light icon
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, 2 * Math.PI);
+      ctx.fillStyle = device.status === 'online' ? '#ffdd44' : '#666';
+      ctx.fill();
+      
+      // Add flame effect for online lights
+      if (device.status === 'online') {
+        ctx.beginPath();
+        ctx.moveTo(x, y - 12);
+        ctx.lineTo(x - 6, y - 20);
+        ctx.lineTo(x + 6, y - 20);
+        ctx.closePath();
+        ctx.fillStyle = '#ff6600';
+        ctx.fill();
+      }
+    } else {
+      // Draw regular device circle
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, 2 * Math.PI);
+      
+      // Color based on device type
+      var deviceColors = {
+        'lock': '#ff4444',
+        'sound': '#44ff44', 
+        'camera': '#4444ff',
+        'prop': '#ffaa44',
+        'sensor': '#aa44ff'
+      };
+      ctx.fillStyle = device.status === 'online' ? (deviceColors[device.type] || '#00ff00') : '#ff0000';
+      ctx.fill();
+    }
     
     // Draw device border
     ctx.strokeStyle = '#fff';
@@ -167,7 +215,7 @@
     ctx.fillStyle = '#fff';
     ctx.font = '10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(device.name, x, y + 20);
+    ctx.fillText(device.name, x, y + 25);
   }
   
   function drawParticipant(ctx, participant, canvasWidth, canvasHeight) {
