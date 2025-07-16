@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, pgEnum, varchar, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -218,6 +218,18 @@ export const roomEvents = pgTable("room_events", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Chat sessions table for storing AI conversations
+export const chatSessions = pgTable("chat_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  messages: jsonb("messages").notNull(),
+  totalCost: decimal("total_cost", { precision: 10, scale: 4 }).default("0.0000"),
+  totalTokens: integer("total_tokens").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertEscapeRoomDesignSchema = createInsertSchema(escapeRoomDesigns).omit({
   id: true,
   createdAt: true,
@@ -252,6 +264,12 @@ export const insertBiometricDataSchema = createInsertSchema(biometricData).omit(
   timestamp: true,
 });
 
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertEscapeRoomDesign = z.infer<typeof insertEscapeRoomDesignSchema>;
@@ -267,3 +285,5 @@ export type RoomDevice = typeof roomDevices.$inferSelect;
 export type RoomEvent = typeof roomEvents.$inferSelect;
 export type InsertBiometricData = z.infer<typeof insertBiometricDataSchema>;
 export type BiometricData = typeof biometricData.$inferSelect;
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
+export type ChatSession = typeof chatSessions.$inferSelect;

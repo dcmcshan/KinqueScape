@@ -728,6 +728,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat session routes
+  app.get("/api/chat/sessions", requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const sessions = await storage.getChatSessions(req.user!.id);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching chat sessions:", error);
+      res.status(500).json({ error: "Failed to fetch chat sessions" });
+    }
+  });
+
+  app.post("/api/chat/sessions", requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const { title, messages, totalCost, totalTokens } = req.body;
+      
+      const sessionData = {
+        userId: req.user!.id,
+        title: title || `Chat Session ${new Date().toLocaleDateString()}`,
+        messages: messages || [],
+        totalCost: totalCost || "0.0000",
+        totalTokens: totalTokens || 0,
+      };
+      
+      const session = await storage.createChatSession(sessionData);
+      res.status(201).json(session);
+    } catch (error: any) {
+      console.error("Error creating chat session:", error);
+      res.status(500).json({ error: "Failed to save chat session" });
+    }
+  });
+
+  app.get("/api/chat/sessions/:id", requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const session = await storage.getChatSession(id);
+      
+      if (!session || session.userId !== req.user!.id) {
+        return res.status(404).json({ error: "Chat session not found" });
+      }
+      
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching chat session:", error);
+      res.status(500).json({ error: "Failed to fetch chat session" });
+    }
+  });
+
+  app.delete("/api/chat/sessions/:id", requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const session = await storage.getChatSession(id);
+      
+      if (!session || session.userId !== req.user!.id) {
+        return res.status(404).json({ error: "Chat session not found" });
+      }
+      
+      const success = await storage.deleteChatSession(id);
+      if (!success) {
+        return res.status(404).json({ error: "Chat session not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting chat session:", error);
+      res.status(500).json({ error: "Failed to delete chat session" });
+    }
+  });
+
   // Venice AI Chat endpoint
   app.post("/api/chat/venice", async (req, res) => {
     try {

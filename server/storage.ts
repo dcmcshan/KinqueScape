@@ -55,6 +55,13 @@ export interface IStorage {
   getLatestBiometricData(participantId: number): Promise<BiometricData | undefined>;
   createBiometricData(data: InsertBiometricData): Promise<BiometricData>;
   getBiometricDataByRoom(roomId: number): Promise<BiometricData[]>;
+  
+  // Chat sessions
+  getChatSessions(userId: number): Promise<ChatSession[]>;
+  getChatSession(id: number): Promise<ChatSession | undefined>;
+  createChatSession(session: InsertChatSession): Promise<ChatSession>;
+  updateChatSession(id: number, session: Partial<InsertChatSession>): Promise<ChatSession | undefined>;
+  deleteChatSession(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -66,6 +73,7 @@ export class MemStorage implements IStorage {
   private roomDevices: Map<number, RoomDevice>;
   private roomEvents: Map<number, RoomEvent>;
   private biometricData: Map<number, BiometricData>;
+  private chatSessions: Map<number, ChatSession>;
   private currentUserId: number;
   private currentDesignId: number;
   private currentPlanId: number;
@@ -74,6 +82,7 @@ export class MemStorage implements IStorage {
   private currentDeviceId: number;
   private currentEventId: number;
   private currentBiometricId: number;
+  private currentChatSessionId: number;
 
   constructor() {
     this.users = new Map();
@@ -84,6 +93,7 @@ export class MemStorage implements IStorage {
     this.roomDevices = new Map();
     this.roomEvents = new Map();
     this.biometricData = new Map();
+    this.chatSessions = new Map();
     this.currentUserId = 1;
     this.currentDesignId = 1;
     this.currentPlanId = 1;
@@ -92,6 +102,7 @@ export class MemStorage implements IStorage {
     this.currentDeviceId = 1;
     this.currentEventId = 1;
     this.currentBiometricId = 1;
+    this.currentChatSessionId = 1;
     
     // Initialize demo dungeon room
     this.initializeDemoRoom();
@@ -561,6 +572,45 @@ export class MemStorage implements IStorage {
     };
     
     return this.addRoomParticipant(demoParticipant);
+  }
+
+  // Chat session methods
+  async getChatSessions(userId: number): Promise<ChatSession[]> {
+    return Array.from(this.chatSessions.values()).filter(session => session.userId === userId);
+  }
+
+  async getChatSession(id: number): Promise<ChatSession | undefined> {
+    return this.chatSessions.get(id);
+  }
+
+  async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
+    const session: ChatSession = { 
+      id: this.currentChatSessionId++,
+      ...insertSession,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.chatSessions.set(session.id, session);
+    return session;
+  }
+
+  async updateChatSession(id: number, updateData: Partial<InsertChatSession>): Promise<ChatSession | undefined> {
+    const session = this.chatSessions.get(id);
+    if (!session) return undefined;
+    
+    const updated: ChatSession = { 
+      ...session, 
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    
+    this.chatSessions.set(id, updated);
+    return updated;
+  }
+
+  async deleteChatSession(id: number): Promise<boolean> {
+    return this.chatSessions.delete(id);
   }
 }
 

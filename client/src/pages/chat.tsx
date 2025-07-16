@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Bot, User, Loader2, Zap } from "lucide-react";
+import { Send, Bot, User, Loader2, Zap, Copy, Check, Save, FolderOpen } from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -32,6 +32,9 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalCost, setTotalCost] = useState(0);
   const [sessionTokens, setSessionTokens] = useState(0);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -129,6 +132,49 @@ export default function ChatPage() {
     });
   };
 
+  const copyMessage = async (content: string, messageId: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageId(messageId);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const saveChat = async () => {
+    if (messages.length <= 1 || isSaving) return; // Don't save if only welcome message
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/chat/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: `Chat Session ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+          messages: messages,
+          totalCost: totalCost.toFixed(4),
+          totalTokens: sessionTokens,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (error) {
+      console.error('Failed to save chat:', error);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const clearChat = () => {
     setMessages([{
       id: "welcome",
@@ -174,14 +220,32 @@ export default function ChatPage() {
           <CardHeader className="flex-shrink-0">
             <div className="flex items-center justify-between">
               <CardTitle className="tron-text">Chat with Venice AI</CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearChat}
-                className="tron-button"
-              >
-                Clear Chat
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={saveChat}
+                  disabled={isSaving || messages.length <= 1}
+                  className="tron-button"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                  ) : saveStatus === 'saved' ? (
+                    <Check className="w-4 h-4 mr-1 text-green-500" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-1" />
+                  )}
+                  {saveStatus === 'saved' ? 'Saved!' : 'Save Chat'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={clearChat}
+                  className="tron-button"
+                >
+                  Clear Chat
+                </Button>
+              </div>
             </div>
           </CardHeader>
           
@@ -203,16 +267,30 @@ export default function ChatPage() {
                     )}
                     
                     <div
-                      className={`max-w-[70%] rounded-lg px-4 py-3 ${
+                      className={`max-w-[70%] rounded-lg px-4 py-3 relative group ${
                         message.role === 'user'
                           ? 'bg-accent text-accent-foreground'
                           : 'bg-muted text-muted-foreground'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-2">
-                        {formatTime(message.timestamp)}
-                      </p>
+                      <p className="text-sm whitespace-pre-wrap pr-8">{message.content}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs opacity-70">
+                          {formatTime(message.timestamp)}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          onClick={() => copyMessage(message.content, message.id)}
+                        >
+                          {copiedMessageId === message.id ? (
+                            <Check className="w-3 h-3 text-green-500" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
 
                     {message.role === 'user' && (
