@@ -127,7 +127,7 @@ export default function RoomDungeonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-background p-1 sm:p-4 lg:p-6">
       {/* Header */}
       <div className="mb-4 sm:mb-6 lg:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -176,7 +176,7 @@ export default function RoomDungeonPage() {
 
       <div className="space-y-3 sm:space-y-4 lg:space-y-6">
         {/* Unity 3D Viewer - Full Width Priority */}
-        <div className="w-full -mx-2 sm:mx-0">
+        <div className="w-full -mx-1 sm:mx-0">
           <RealUnityWebGL
             devices={devices}
             participants={participants}

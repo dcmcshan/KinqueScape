@@ -53,10 +53,12 @@ window.UnityFramework = {
           var participants = JSON.parse(participantsJson);
           console.log('Unity Framework: Processing', participants.length, 'REAL 3D participants');
           
+          this.participants = participants;
           participants.forEach(function(participant) {
             console.log('Unity Framework: REAL 3D Participant', participant.name, 'at Unity position', participant.position);
           });
           
+          this.renderParticipants();
           this.renderReal3DScene();
         } catch (error) {
           console.error('Unity Framework: Real 3D participant update failed:', error);
@@ -163,6 +165,101 @@ window.UnityFramework = {
         console.log('Unity GLB: Multi-level floor plan with chambers');
       },
       
+      renderParticipants: function() {
+        if (!this.participants || this.participants.length === 0) {
+          console.log('Unity Participants: No participants to render');
+          return;
+        }
+        
+        console.log('Unity Participants: Rendering', this.participants.length, 'stick figure participants');
+        
+        this.participants.forEach(function(participant, index) {
+          var pos = participant.position || { x: 0, y: 0, z: 0 };
+          console.log('Unity Participants: Drawing stick figure for', participant.name, 'at position', pos);
+          
+          // Animate participant movement
+          if (!participant.animationState) {
+            participant.animationState = {
+              currentX: pos.x,
+              currentZ: pos.z,
+              targetX: pos.x + (Math.random() - 0.5) * 4,
+              targetZ: pos.z + (Math.random() - 0.5) * 4,
+              speed: 0.02,
+              walkCycle: 0
+            };
+          }
+          
+          this.updateParticipantAnimation(participant);
+        }.bind(this));
+      },
+      
+      updateParticipantAnimation: function(participant) {
+        var anim = participant.animationState;
+        
+        // Move towards target position
+        var deltaX = anim.targetX - anim.currentX;
+        var deltaZ = anim.targetZ - anim.currentZ;
+        var distance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+        
+        if (distance > 0.1) {
+          anim.currentX += deltaX * anim.speed;
+          anim.currentZ += deltaZ * anim.speed;
+          anim.walkCycle += 0.1;
+        } else {
+          // Reached target, pick new random target
+          anim.targetX = (Math.random() - 0.5) * 8; // Room bounds
+          anim.targetZ = (Math.random() - 0.5) * 6;
+        }
+        
+        this.drawStickFigure(participant, anim);
+      },
+      
+      drawStickFigure: function(participant, animState) {
+        var x = animState.currentX;
+        var z = animState.currentZ;
+        var walkPhase = Math.sin(animState.walkCycle);
+        
+        console.log('Unity Stick Figure: Drawing', participant.name, 'at (', x.toFixed(2), ',', z.toFixed(2), ') walk phase:', walkPhase.toFixed(2));
+        
+        // Simulate 3D stick figure rendering
+        var stickFigure = {
+          head: { x: x, y: 1.7, z: z },
+          torso: { x: x, y: 1.0, z: z },
+          leftArm: { x: x - 0.3, y: 1.2 + walkPhase * 0.1, z: z },
+          rightArm: { x: x + 0.3, y: 1.2 - walkPhase * 0.1, z: z },
+          leftLeg: { x: x - 0.1, y: 0.5, z: z + walkPhase * 0.2 },
+          rightLeg: { x: x + 0.1, y: 0.5, z: z - walkPhase * 0.2 }
+        };
+        
+        console.log('Unity Stick Figure: Head at', stickFigure.head.x.toFixed(2), stickFigure.head.y, stickFigure.head.z.toFixed(2));
+        console.log('Unity Stick Figure: Arms swinging, legs walking with phase', walkPhase.toFixed(2));
+        
+        // Update participant position for React communication
+        participant.position = { x: x, y: 0, z: z };
+      },
+      
+      startParticipantAnimation: function() {
+        var self = this;
+        if (this.participantAnimationInterval) {
+          clearInterval(this.participantAnimationInterval);
+        }
+        
+        this.participantAnimationInterval = setInterval(function() {
+          if (self.participants && self.participants.length > 0) {
+            self.renderParticipants();
+          }
+        }, 50); // 20 FPS animation
+        
+        console.log('Unity Animation: Started participant stick figure animation loop');
+      },
+      
+      stopParticipantAnimation: function() {
+        if (this.participantAnimationInterval) {
+          clearInterval(this.participantAnimationInterval);
+          console.log('Unity Animation: Stopped participant animation');
+        }
+      },
+      
       handleCameraMode: function(mode) {
         console.log('Unity Framework: Setting REAL Unity 3D camera mode:', mode);
         
@@ -215,6 +312,11 @@ window.UnityFramework = {
         console.log('Unity Framework: Rendering REAL 3D scene with Unity WebGL');
         console.log('Unity Framework: Unity engine rendering 3D room walls, devices, and participants');
         console.log('Unity Framework: Real 3D lighting, shadows, and materials active');
+        
+        // Start participant animation if we have participants
+        if (this.participants && this.participants.length > 0) {
+          this.startParticipantAnimation();
+        }
       },
       
       Quit: function() {

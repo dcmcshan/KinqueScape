@@ -37,7 +37,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <img 
-              src={logoPath} 
+              src="/kinquescape-logo-red.svg" 
               alt="KinqueScape Logo" 
               className="w-24 h-24 object-contain"
             />

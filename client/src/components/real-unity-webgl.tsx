@@ -262,8 +262,8 @@ export default function RealUnityWebGL({
   const totalDevices = devices.length;
 
   return (
-    <Card className="bg-gray-900 border-red-900">
-      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+    <Card className="bg-gray-900 border-red-900 mx-0 border-l-0 border-r-0 sm:border-l sm:border-r sm:mx-0 rounded-none sm:rounded">
+      <CardHeader className="pb-2 sm:pb-3 px-1 sm:px-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           <CardTitle className="text-red-400 flex items-center gap-2 text-lg sm:text-xl">
             <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -337,11 +337,11 @@ export default function RealUnityWebGL({
         </div>
       </CardHeader>
       
-      <CardContent className="p-2 sm:p-4">
+      <CardContent className="p-1 sm:p-4">
         <div className="relative">
           <canvas
             ref={canvasRef}
-            className="w-full h-[50vh] sm:h-[60vh] min-h-[300px] sm:min-h-[400px] max-h-[500px] sm:max-h-[600px] bg-black rounded border-2 border-gray-700"
+            className="w-full h-[50vh] sm:h-[60vh] min-h-[300px] sm:min-h-[400px] max-h-[500px] sm:max-h-[600px] bg-black rounded-none sm:rounded border-0 sm:border-2 sm:border-gray-700"
             style={{ 
               display: 'block',
               aspectRatio: '16/9'
