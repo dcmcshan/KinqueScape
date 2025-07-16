@@ -73,6 +73,10 @@ window.UnityFramework = {
         // Load the actual GLB file with real parsing
         console.log('Unity Framework: Starting actual GLB file loading process');
         this.loadGLBFile(filePath);
+        
+        // Expose methods globally for debugging and external access
+        window.unityGLBLoader = this;
+        console.log('Unity Framework: GLB loader exposed globally');
       },
       
       loadGLBFile: function(filePath) {
