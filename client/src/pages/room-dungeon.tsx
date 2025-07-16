@@ -178,10 +178,9 @@ export default function RoomDungeonPage() {
         {/* 3D Room Visualization */}
         <div className="lg:col-span-2">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-            {/* Your Custom 3D Space Viewer */}
+            {/* Unity WebGL 3D Viewer with Your Custom Space */}
             <div className="xl:col-span-2">
-              <ThreeJS3DViewer
-                modelPath="/attached_assets/7_16_2025.glb"
+              <UnityWebGLComponent
                 devices={devices}
                 participants={participants}
                 onDeviceClick={(device) => {
