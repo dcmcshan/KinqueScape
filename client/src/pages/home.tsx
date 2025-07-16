@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, Play } from "lucide-react";
+import logoPath from "@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png";
 
 export default function HomePage() {
   return (
@@ -13,7 +14,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
               <img 
-                src="@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png" 
+                src={logoPath} 
                 alt="KinqueScape Logo" 
                 className="w-8 h-8 object-contain"
               />
@@ -36,7 +37,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <img 
-              src="@assets/9272995D-5FB4-4416-932A-EA7A3B0E0FD8_1752688631328.png" 
+              src={logoPath} 
               alt="KinqueScape Logo" 
               className="w-24 h-24 object-contain"
             />
