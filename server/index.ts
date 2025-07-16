@@ -44,6 +44,21 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // Serve static files from public directory before Vite middleware
+  app.use(express.static("public", {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (path.endsWith('.wasm')) {
+        res.setHeader('Content-Type', 'application/wasm');
+      } else if (path.endsWith('.data')) {
+        res.setHeader('Content-Type', 'application/octet-stream');
+      } else if (path.endsWith('.svg')) {
+        res.setHeader('Content-Type', 'image/svg+xml');
+      }
+    }
+  }));
+  
   // Serve Unity build files before Vite middleware
   app.use("/unity-build", express.static("public/unity-build", {
     setHeaders: (res, path) => {
