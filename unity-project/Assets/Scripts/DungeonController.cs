@@ -46,13 +46,10 @@ public class DungeonController : MonoBehaviour
             mainCamera.farClipPlane = 100f;
         }
 
-        // Create realistic dungeon room based on GLB dimensions (8x11 units)
-        Create3DRoomStructure();
-        
         // Add proper dungeon lighting
         CreateDungeonLighting();
         
-        // Initialize GLB loader for actual 3D mesh
+        // Initialize GLB loader for actual 3D mesh - this will create the room structure
         InitializeGLBLoader();
         
         Debug.Log("Unity: 3D Dungeon environment setup complete");
