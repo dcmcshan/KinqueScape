@@ -42,7 +42,7 @@ Preferred communication style: Simple, everyday language.
 - **Design Page**: Interactive canvas for creating escape room layouts with drag-and-drop tools
 - **Plan Page**: Displays the actual KinqueScape business plan focused on dungeon demo installation
 - **Dashboard Page**: Interactive dashboard for monitoring room statistics and participant data
-- **Room Control Page**: Unity-based 3D room visualization with real-time biometric monitoring
+- **Room Control Page**: Unity WebGL 3D room visualization with real-time biometric monitoring and device controls
 - **Responsive Sidebar**: Navigation between all platform tools
 
 #### API Endpoints
@@ -70,6 +70,7 @@ Preferred communication style: Simple, everyday language.
 - **UI Framework**: Extensive Radix UI component library
 - **Styling**: Tailwind CSS with PostCSS processing
 - **Forms**: React Hook Form with Hookform resolvers
+- **Unity Integration**: react-unity-webgl for Unity WebGL embedding and communication
 
 ### Development Tools
 - **Replit Integration**: Vite plugins for Replit development environment
@@ -91,10 +92,12 @@ Preferred communication style: Simple, everyday language.
 ### Current Implementation Status
 - **Completed**: Dark theme with red Tron-style accents across all pages
 - **Completed**: Comprehensive biometric monitoring infrastructure for AmazFit Active 2 watches
-- **Completed**: Room management system with Unity-based 3D visualization
+- **Completed**: Room management system with Unity WebGL 3D visualization
 - **Completed**: Business plan page displaying actual KinqueScape strategy focused on dungeon demo
 - **Completed**: Multi-role user system with authentication and permissions
 - **Completed**: In-memory storage with comprehensive database schema for future PostgreSQL migration
+- **Completed**: Unity WebGL integration with embedded loader for dungeon environment visualization
+- **Completed**: Interactive device and participant tracking with real-time updates
 - **In Progress**: Demo dungeon room installation planning and validation
 
 ### Architecture Focus
