@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, Users, RotateCcw, ZoomIn, ZoomOut, Play, Pause, Lightbulb } from 'lucide-react';
 import type { RoomDevice, RoomParticipant } from '@shared/schema';
+import ThreeRoomRenderer from './three-room-renderer';
 
 // Unity WebGL interface declarations
 declare global {
@@ -29,9 +30,9 @@ export default function RealUnityWebGL({
   onDeviceClick,
   onParticipantClick,
 }: RealUnityWebGLProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [loadingProgression, setLoadingProgression] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(true);
+  const [loadingProgression, setLoadingProgression] = useState(100);
   const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const unityInstanceRef = useRef<any>(null);
@@ -467,51 +468,14 @@ export default function RealUnityWebGL({
       
       <CardContent className="p-1 sm:p-4">
         <div className="relative">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-[50vh] sm:h-[60vh] min-h-[300px] sm:min-h-[400px] max-h-[500px] sm:max-h-[600px] bg-black rounded-none sm:rounded border-0 sm:border-2 sm:border-gray-700"
-            style={{ 
-              display: 'block',
-              aspectRatio: '16/9'
-            }}
-          />
-          
-          {!isLoaded && !error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded">
-              <div className="text-white text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400 mx-auto mb-2"></div>
-                <p>Loading Unity WebGL...</p>
-                <div className="mt-2 bg-gray-800 rounded-full h-2 w-48 mx-auto">
-                  <div 
-                    className="bg-red-400 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${loadingProgression}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-400 mt-1">{loadingProgression}%</p>
-              </div>
-            </div>
-          )}
-          
-          {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded">
-              <div className="text-red-400 text-center">
-                <p className="mb-2">Unity WebGL Error</p>
-                <p className="text-sm text-gray-400">{error}</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-3 text-white border-gray-600"
-                  onClick={() => {
-                    setError(null);
-                    setIsLoaded(false);
-                    setIsInitialized(false);
-                    initializeUnity();
-                  }}
-                >
-                  Retry
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="w-full h-[50vh] sm:h-[60vh] min-h-[300px] sm:min-h-[400px] max-h-[500px] sm:max-h-[600px] bg-black rounded-none sm:rounded border-0 sm:border-2 sm:border-gray-700">
+            <ThreeRoomRenderer 
+              devices={devices}
+              participants={participants}
+              onDeviceClick={onDeviceClick}
+              onParticipantClick={onParticipantClick}
+            />
+          </div>
         </div>
         
         <div className="flex justify-between items-center mt-4 text-xs">
