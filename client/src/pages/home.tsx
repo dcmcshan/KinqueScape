@@ -22,10 +22,10 @@ export default function HomePage() {
             </div>
             <nav className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-muted-foreground hover:text-accent">Features</a>
-              <a href="#pricing" className="text-muted-foreground hover:text-accent">Pricing</a>
+              <Link href="/scapes" className="text-muted-foreground hover:text-accent">Experiences</Link>
               <a href="#about" className="text-muted-foreground hover:text-accent">About</a>
-              <Link href="/design">
-                <Button variant="outline" className="tron-button">Get Started</Button>
+              <Link href="/scapes">
+                <Button variant="outline" className="tron-button">View 'Scapes</Button>
               </Link>
             </nav>
           </div>

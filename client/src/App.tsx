@@ -9,6 +9,7 @@ import DesignPage from "@/pages/design";
 import PlanPage from "@/pages/plan";
 import DashboardPage from "@/pages/dashboard";
 import RoomDungeonPage from "@/pages/room-dungeon";
+import ScapesPage from "@/pages/scapes";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
         <Route path="/design" component={() => <AppLayout><DesignPage /></AppLayout>} />
         <Route path="/plan" component={() => <AppLayout><PlanPage /></AppLayout>} />
         <Route path="/dash" component={() => <AppLayout><DashboardPage /></AppLayout>} />
+        <Route path="/scapes" component={() => <AppLayout><ScapesPage /></AppLayout>} />
         <Route path="/room/dungeon" component={() => <AppLayout><RoomDungeonPage /></AppLayout>} />
         <Route component={NotFound} />
       </Switch>

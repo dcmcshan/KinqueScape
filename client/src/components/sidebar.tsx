@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home, Shield } from "lucide-react";
+import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home, Shield, Heart } from "lucide-react";
 import logoPath from "@assets/C40089C9-F4D0-4D4E-8056-BC35F95B05D3_1752696036206.png";
 
 export default function Sidebar() {
@@ -23,6 +23,7 @@ export default function Sidebar() {
   const isActive = (path: string) => {
     if (path === "/" && (location === "/" || location === "/design")) return true;
     if (path === "/room/dungeon" && location === "/room/dungeon") return true;
+    if (path === "/scapes" && location === "/scapes") return true;
     return location === path;
   };
 
@@ -87,6 +88,12 @@ export default function Sidebar() {
               <div className={`nav-item ${isActive("/dash") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
                 <BarChart3 className="w-5 h-5" />
                 <span>Live Dashboard</span>
+              </div>
+            </Link>
+            <Link href="/scapes">
+              <div className={`nav-item ${isActive("/scapes") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
+                <Heart className="w-5 h-5" />
+                <span>Adult 'Scapes</span>
               </div>
             </Link>
             <Link href="/room/dungeon">
