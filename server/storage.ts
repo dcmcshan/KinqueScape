@@ -62,6 +62,18 @@ export interface IStorage {
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   updateChatSession(id: number, session: Partial<InsertChatSession>): Promise<ChatSession | undefined>;
   deleteChatSession(id: number): Promise<boolean>;
+  
+  // Scape rules
+  getScapeRules(roomId: number): Promise<ScapeRule[]>;
+  getScapeRule(id: number): Promise<ScapeRule | undefined>;
+  createScapeRule(rule: InsertScapeRule): Promise<ScapeRule>;
+  updateScapeRule(id: number, rule: Partial<InsertScapeRule>): Promise<ScapeRule | undefined>;
+  deleteScapeRule(id: number): Promise<boolean>;
+  getActiveScapeRules(roomId: number): Promise<ScapeRule[]>;
+  
+  // Rule executions
+  getRuleExecutions(ruleId: number): Promise<RuleExecution[]>;
+  createRuleExecution(execution: InsertRuleExecution): Promise<RuleExecution>;
 }
 
 export class MemStorage implements IStorage {
@@ -74,6 +86,8 @@ export class MemStorage implements IStorage {
   private roomEvents: Map<number, RoomEvent>;
   private biometricData: Map<number, BiometricData>;
   private chatSessions: Map<number, ChatSession>;
+  private scapeRules: Map<number, ScapeRule>;
+  private ruleExecutions: Map<number, RuleExecution>;
   private currentUserId: number;
   private currentDesignId: number;
   private currentPlanId: number;
@@ -83,6 +97,8 @@ export class MemStorage implements IStorage {
   private currentEventId: number;
   private currentBiometricId: number;
   private currentChatSessionId: number;
+  private currentScapeRuleId: number;
+  private currentRuleExecutionId: number;
 
   constructor() {
     this.users = new Map();
@@ -94,6 +110,8 @@ export class MemStorage implements IStorage {
     this.roomEvents = new Map();
     this.biometricData = new Map();
     this.chatSessions = new Map();
+    this.scapeRules = new Map();
+    this.ruleExecutions = new Map();
     this.currentUserId = 1;
     this.currentDesignId = 1;
     this.currentPlanId = 1;
@@ -103,6 +121,8 @@ export class MemStorage implements IStorage {
     this.currentEventId = 1;
     this.currentBiometricId = 1;
     this.currentChatSessionId = 1;
+    this.currentScapeRuleId = 1;
+    this.currentRuleExecutionId = 1;
     
     // Initialize demo dungeon room
     this.initializeDemoRoom();
@@ -611,6 +631,69 @@ export class MemStorage implements IStorage {
 
   async deleteChatSession(id: number): Promise<boolean> {
     return this.chatSessions.delete(id);
+  }
+
+  // Scape rules methods
+  async getScapeRules(roomId: number): Promise<ScapeRule[]> {
+    return Array.from(this.scapeRules.values()).filter(rule => rule.roomId === roomId);
+  }
+
+  async getScapeRule(id: number): Promise<ScapeRule | undefined> {
+    return this.scapeRules.get(id);
+  }
+
+  async createScapeRule(insertRule: InsertScapeRule): Promise<ScapeRule> {
+    const rule: ScapeRule = { 
+      id: this.currentScapeRuleId++,
+      ...insertRule,
+      currentExecutions: 0,
+      lastExecuted: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.scapeRules.set(rule.id, rule);
+    return rule;
+  }
+
+  async updateScapeRule(id: number, updateData: Partial<InsertScapeRule>): Promise<ScapeRule | undefined> {
+    const rule = this.scapeRules.get(id);
+    if (!rule) return undefined;
+    
+    const updated: ScapeRule = { 
+      ...rule, 
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    
+    this.scapeRules.set(id, updated);
+    return updated;
+  }
+
+  async deleteScapeRule(id: number): Promise<boolean> {
+    return this.scapeRules.delete(id);
+  }
+
+  async getActiveScapeRules(roomId: number): Promise<ScapeRule[]> {
+    return Array.from(this.scapeRules.values())
+      .filter(rule => rule.roomId === roomId && rule.isActive)
+      .sort((a, b) => b.priority - a.priority); // Higher priority first
+  }
+
+  // Rule execution methods
+  async getRuleExecutions(ruleId: number): Promise<RuleExecution[]> {
+    return Array.from(this.ruleExecutions.values()).filter(exec => exec.ruleId === ruleId);
+  }
+
+  async createRuleExecution(insertExecution: InsertRuleExecution): Promise<RuleExecution> {
+    const execution: RuleExecution = { 
+      id: this.currentRuleExecutionId++,
+      ...insertExecution,
+      executedAt: new Date(),
+    };
+    
+    this.ruleExecutions.set(execution.id, execution);
+    return execution;
   }
 }
 

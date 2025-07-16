@@ -12,6 +12,7 @@ import RoomDungeonPage from "@/pages/room-dungeon";
 import ScapesPage from "@/pages/scapes";
 import PropsPage from "@/pages/props";
 import ChatPage from "@/pages/chat";
+import RulesPage from "@/pages/rules";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/scapes" component={() => <AppLayout><ScapesPage /></AppLayout>} />
         <Route path="/props" component={() => <AppLayout><PropsPage /></AppLayout>} />
         <Route path="/chat" component={() => <AppLayout><ChatPage /></AppLayout>} />
+        <Route path="/rules" component={() => <AppLayout><RulesPage /></AppLayout>} />
         <Route path="/room/dungeon" component={() => <AppLayout><RoomDungeonPage /></AppLayout>} />
         <Route component={NotFound} />
       </Switch>

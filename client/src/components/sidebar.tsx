@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home, Shield, Heart, Package, MessageCircle } from "lucide-react";
+import { Box, DraftingCompass, ChartLine, BellRing, BarChart3, User, Menu, X, Home, Shield, Heart, Package, MessageCircle, Brain } from "lucide-react";
 import logoPath from "@assets/C40089C9-F4D0-4D4E-8056-BC35F95B05D3_1752696036206.png";
 
 export default function Sidebar() {
@@ -26,6 +26,7 @@ export default function Sidebar() {
     if (path === "/scapes" && location === "/scapes") return true;
     if (path === "/props" && location === "/props") return true;
     if (path === "/chat" && location === "/chat") return true;
+    if (path === "/rules" && location === "/rules") return true;
     return location === path;
   };
 
@@ -110,6 +111,14 @@ export default function Sidebar() {
                 <span>AI Chat</span>
               </div>
             </Link>
+            
+            <Link href="/rules">
+              <div className={`nav-item ${isActive("/rules") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
+                <Brain className="w-5 h-5" />
+                <span>Scape Rules</span>
+              </div>
+            </Link>
+            
             <Link href="/room/dungeon">
               <div className={`nav-item ${isActive("/room/dungeon") ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
                 <Shield className="w-5 h-5" />

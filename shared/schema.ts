@@ -230,6 +230,36 @@ export const chatSessions = pgTable("chat_sessions", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Scape rules engine for biometric triggers and device automation
+export const scapeRules = pgTable("scape_rules", {
+  id: serial("id").primaryKey(),
+  roomId: integer("room_id").notNull().references(() => rooms.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  priority: integer("priority").notNull().default(1), // Higher priority rules execute first
+  trigger: jsonb("trigger").notNull(), // Condition definition
+  action: jsonb("action").notNull(), // Action to execute
+  cooldown: integer("cooldown").default(0), // Seconds between executions
+  maxExecutions: integer("max_executions"), // Optional execution limit
+  currentExecutions: integer("current_executions").default(0),
+  lastExecuted: timestamp("last_executed"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Rule execution history for debugging and analytics
+export const ruleExecutions = pgTable("rule_executions", {
+  id: serial("id").primaryKey(),
+  ruleId: integer("rule_id").notNull().references(() => scapeRules.id),
+  participantId: integer("participant_id").references(() => roomParticipants.id),
+  triggerData: jsonb("trigger_data"), // Data that triggered the rule
+  actionResult: jsonb("action_result"), // Result of the action
+  success: boolean("success").notNull(),
+  errorMessage: text("error_message"),
+  executedAt: timestamp("executed_at").defaultNow().notNull(),
+});
+
 export const insertEscapeRoomDesignSchema = createInsertSchema(escapeRoomDesigns).omit({
   id: true,
   createdAt: true,
@@ -270,6 +300,19 @@ export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   updatedAt: true,
 });
 
+export const insertScapeRuleSchema = createInsertSchema(scapeRules).omit({
+  id: true,
+  currentExecutions: true,
+  lastExecuted: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRuleExecutionSchema = createInsertSchema(ruleExecutions).omit({
+  id: true,
+  executedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertEscapeRoomDesign = z.infer<typeof insertEscapeRoomDesignSchema>;
@@ -287,3 +330,7 @@ export type InsertBiometricData = z.infer<typeof insertBiometricDataSchema>;
 export type BiometricData = typeof biometricData.$inferSelect;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertScapeRule = z.infer<typeof insertScapeRuleSchema>;
+export type ScapeRule = typeof scapeRules.$inferSelect;
+export type InsertRuleExecution = z.infer<typeof insertRuleExecutionSchema>;
+export type RuleExecution = typeof ruleExecutions.$inferSelect;

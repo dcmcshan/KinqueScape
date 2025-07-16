@@ -24,7 +24,7 @@ export default function ChatPage() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Welcome to KinqueScape AI Chat powered by Venice AI! I'm here to help you with escape room design, adult entertainment concepts, biometric integration, and smart device connectivity. What would you like to explore?",
+      content: "Hello! I'm Venice AI, your expert in adult entertainment technology and KinqueScape development. I specialize in creating sophisticated scape rules using our biometric monitoring and smart device automation system.\n\n🧠 **Scape Rules Engine**\nI can help you create rules like:\n• \"If heart rate < 90 bpm, increase vibrator intensity\"\n• \"When stress level > 80, send safety alert\"\n• \"On zone entry, trigger lighting and audio effects\"\n\n📊 **Available Triggers & Actions**\n• Biometric data (heart rate, HRV, stress)\n• Device status and control\n• Participant positioning\n• Time-based conditions\n• Complex combinations\n\nWhat kind of scape rule would you like to develop?",
       timestamp: new Date()
     }
   ]);
@@ -219,7 +219,7 @@ export default function ChatPage() {
         <Card className="h-[600px] flex flex-col tron-border">
           <CardHeader className="flex-shrink-0">
             <div className="flex items-center justify-between">
-              <CardTitle className="tron-text">Chat with Venice AI</CardTitle>
+              <CardTitle className="tron-text">Chat with Venice AI - Scape Rules Expert</CardTitle>
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 

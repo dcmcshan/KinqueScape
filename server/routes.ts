@@ -796,7 +796,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Venice AI Chat endpoint
+  // Scape rules API endpoints
+  app.get("/api/rooms/:roomId/rules", requireAuth, requireRole(["master", "admin"]), async (req: AuthRequest, res) => {
+    try {
+      const roomId = parseInt(req.params.roomId);
+      const rules = await storage.getScapeRules(roomId);
+      res.json(rules);
+    } catch (error) {
+      console.error("Error fetching scape rules:", error);
+      res.status(500).json({ error: "Failed to fetch scape rules" });
+    }
+  });
+
+  app.post("/api/rooms/:roomId/rules", requireAuth, requireRole(["master", "admin"]), async (req: AuthRequest, res) => {
+    try {
+      const roomId = parseInt(req.params.roomId);
+      const { name, description, priority, trigger, action, cooldown, maxExecutions } = req.body;
+      
+      const ruleData = {
+        roomId,
+        name,
+        description,
+        priority: priority || 1,
+        trigger,
+        action,
+        cooldown: cooldown || 0,
+        maxExecutions,
+        isActive: true,
+      };
+      
+      const rule = await storage.createScapeRule(ruleData);
+      res.status(201).json(rule);
+    } catch (error: any) {
+      console.error("Error creating scape rule:", error);
+      res.status(500).json({ error: "Failed to create scape rule" });
+    }
+  });
+
+  app.get("/api/rules/:id", requireAuth, requireRole(["master", "admin"]), async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const rule = await storage.getScapeRule(id);
+      
+      if (!rule) {
+        return res.status(404).json({ error: "Scape rule not found" });
+      }
+      
+      res.json(rule);
+    } catch (error) {
+      console.error("Error fetching scape rule:", error);
+      res.status(500).json({ error: "Failed to fetch scape rule" });
+    }
+  });
+
+  app.put("/api/rules/:id", requireAuth, requireRole(["master", "admin"]), async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { name, description, priority, trigger, action, cooldown, maxExecutions, isActive } = req.body;
+      
+      const updateData = {
+        name,
+        description,
+        priority,
+        trigger,
+        action,
+        cooldown,
+        maxExecutions,
+        isActive,
+      };
+      
+      const rule = await storage.updateScapeRule(id, updateData);
+      if (!rule) {
+        return res.status(404).json({ error: "Scape rule not found" });
+      }
+      
+      res.json(rule);
+    } catch (error) {
+      console.error("Error updating scape rule:", error);
+      res.status(500).json({ error: "Failed to update scape rule" });
+    }
+  });
+
+  app.delete("/api/rules/:id", requireAuth, requireRole(["master", "admin"]), async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteScapeRule(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Scape rule not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting scape rule:", error);
+      res.status(500).json({ error: "Failed to delete scape rule" });
+    }
+  });
+
+  // Rule execution history
+  app.get("/api/rules/:id/executions", requireAuth, requireRole(["master", "admin"]), async (req: AuthRequest, res) => {
+    try {
+      const ruleId = parseInt(req.params.id);
+      const executions = await storage.getRuleExecutions(ruleId);
+      res.json(executions);
+    } catch (error) {
+      console.error("Error fetching rule executions:", error);
+      res.status(500).json({ error: "Failed to fetch rule executions" });
+    }
+  });
+
+  // Venice AI Chat endpoint with schema context
   app.post("/api/chat/venice", async (req, res) => {
     try {
       const { message, conversation_history } = req.body;
@@ -818,18 +927,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messages = [
         {
           role: "system",
-          content: `You are an AI assistant specialized in KinqueScape, an adult-themed escape room platform. You help with:
+          content: `You are Venice AI, an expert in adult entertainment technology and escape room automation for KinqueScape platform.
 
-1. Escape room design and layout optimization
-2. Adult entertainment technology integration  
-3. Smart device connectivity (BLE, WiFi, NFC)
-4. Biometric monitoring and safety protocols
-5. Adult toy and restraint system integration
-6. Business strategy for adult entertainment venues
-7. Voyeurism features and monetization models
-8. Unity 3D visualization and Three.js integration
+KINQUESCAPE PLATFORM OVERVIEW:
+- Adult-themed escape rooms with biometric monitoring and smart device integration
+- Real-time participant tracking via AmazFit Active 2 watches (heart rate, HRV, stress, positioning)
+- Smart toy integration for immersive experiences
+- Rule-based automation system for dynamic scenarios
 
-Be professional, knowledgeable, and provide practical advice for building immersive adult entertainment experiences. Focus on technology, safety, and business aspects.`
+SCAPE RULES ENGINE:
+You can create sophisticated rules using this structure:
+
+TRIGGER TYPES:
+- biometric: {type: "heartRate|hrv|stressLevel", operator: "<|>|=|<=|>=", value: number, participantId?: number}
+- device: {type: "status|property", deviceId: number, property?: string, operator: "<|>|=", value: any}
+- time: {type: "duration|schedule", value: number|string}
+- participant: {type: "position|action", participantId?: number, zone?: string, action?: string}
+- combination: {operator: "AND|OR", conditions: [trigger1, trigger2, ...]}
+
+ACTION TYPES:
+- device: {type: "control", deviceId: number, command: string, parameters: object}
+- notification: {type: "alert|message", target: "master|participant|all", content: string}
+- lighting: {type: "color|intensity|effect", parameters: {color?: string, brightness?: number, effect?: string}}
+- audio: {type: "play|stop|volume", file?: string, volume?: number}
+- environment: {type: "temperature|humidity|airflow", value: number}
+
+EXAMPLE SCAPE RULES:
+1. "If heart rate < 90 bpm, increase vibrator intensity"
+   trigger: {type: "biometric", metric: "heartRate", operator: "<", value: 90}
+   action: {type: "device", deviceId: 5, command: "setIntensity", parameters: {level: 75}}
+
+2. "When participant enters restraint zone, dim lights and play dungeon ambience"
+   trigger: {type: "participant", action: "enterZone", zone: "restraint_area"}
+   action: [{type: "lighting", parameters: {brightness: 20}}, {type: "audio", file: "dungeon_ambience.mp3"}]
+
+3. "If stress level > 80 for 2 minutes, send safety check"
+   trigger: {type: "combination", operator: "AND", conditions: [
+     {type: "biometric", metric: "stressLevel", operator: ">", value: 80},
+     {type: "time", value: 120}
+   ]}
+   action: {type: "notification", target: "master", content: "High stress detected - safety check required"}
+
+Help create engaging, safe, and responsive adult entertainment experiences using biometric feedback and smart device automation.`
         },
         ...conversation_history.slice(-10), // Include recent conversation context
         {
