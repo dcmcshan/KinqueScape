@@ -102,6 +102,19 @@ export default function RoomDungeonPage() {
     return "low";
   };
 
+  const getStressBadgeVariant = (stressLevel: string) => {
+    switch (stressLevel) {
+      case "high":
+        return "destructive";
+      case "medium":
+        return "secondary";
+      case "low":
+        return "default";
+      default:
+        return "outline";
+    }
+  };
+
   const getDeviceIcon = (type: string) => {
     switch (type) {
       case "light": return <Zap className="w-4 h-4" />;
@@ -294,7 +307,7 @@ export default function RoomDungeonPage() {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-medium">{participant.name}</h4>
+                            <h4 className="font-medium">{participant.participantName}</h4>
                             <p className="text-sm text-gray-400">Watch: {participant.watchId}</p>
                           </div>
                           <div className="text-right">
