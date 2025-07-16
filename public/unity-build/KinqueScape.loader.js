@@ -58,6 +58,7 @@
           };
           
           // Initialize the scene
+          console.log('Unity: Initializing scene on canvas:', canvas.width, 'x', canvas.height);
           initializeScene(canvas);
           
           // Set up click handlers
@@ -87,7 +88,12 @@
   
   function redrawScene(canvas) {
     var ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.error('Unity: Could not get 2D context for canvas');
+      return;
+    }
+    
+    console.log('Unity: Redrawing scene on canvas:', canvas.width, 'x', canvas.height);
     
     // Clear canvas
     ctx.fillStyle = '#0a0a0a';

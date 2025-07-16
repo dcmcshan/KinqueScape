@@ -278,9 +278,17 @@ export default function UnityWebGLComponent({
                 height: '100%',
                 display: 'block',
                 background: '#1a1a1a',
+                border: '1px solid #ff0040',
               }}
               className="rounded-lg"
             />
+            
+            {/* Debug info */}
+            {isInitialized && (
+              <div className="absolute top-2 left-2 text-xs text-green-400 bg-black/50 p-2 rounded">
+                Unity Active: {devices.length} devices loaded
+              </div>
+            )}
           </div>
 
           {/* Controls */}
