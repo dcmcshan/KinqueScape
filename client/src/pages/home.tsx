@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DraftingCompass, ChartLine, BarChart3, Users, Star, Check, ArrowRight, Play } from "lucide-react";
-const logoPath = "/logo.svg";
+import logoPath from "@assets/C40089C9-F4D0-4D4E-8056-BC35F95B05D3_1752696036206.png";
 
 export default function HomePage() {
   return (
@@ -16,7 +16,7 @@ export default function HomePage() {
               <img 
                 src={logoPath} 
                 alt="KinqueScape Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-8 h-8 object-contain logo-glow"
               />
               <span className="text-xl font-bold tron-text">KinqueScape</span>
             </div>
@@ -37,9 +37,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <img 
-              src="/logo.svg" 
+              src={logoPath} 
               alt="KinqueScape Logo" 
-              className="w-24 h-24 object-contain"
+              className="w-24 h-24 object-contain logo-glow"
             />
           </div>
           <Badge className="mb-4 bg-accent/10 text-accent border-accent">Launch Your Escape Room Empire</Badge>
