@@ -1026,6 +1026,76 @@ Help create engaging, safe, and responsive adult entertainment experiences using
     }
   });
 
+  // Venice AI Image Generation endpoint
+  app.post("/api/chat/venice/image", async (req, res) => {
+    try {
+      const { prompt, style, model } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({ error: "Prompt is required" });
+      }
+
+      // Check if Venice AI API key is configured
+      const veniceApiKey = process.env.VENICE_API_KEY;
+      if (!veniceApiKey) {
+        return res.status(503).json({ 
+          error: "Venice AI API key not configured",
+          response: "Venice AI integration requires an API key. Please add your VENICE_API_KEY to environment variables."
+        });
+      }
+
+      // Call Venice AI Image Generation API
+      const veniceResponse = await fetch('https://api.venice.ai/api/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${veniceApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model || 'playground-v2.5',
+          prompt: prompt,
+          style: style || 'naturalistic',
+          width: 512,
+          height: 512,
+          num_images: 1,
+          guidance_scale: 7.0,
+          num_inference_steps: 20
+        })
+      });
+
+      if (!veniceResponse.ok) {
+        const errorText = await veniceResponse.text();
+        console.error('Venice AI Image API error:', errorText);
+        return res.status(veniceResponse.status).json({ 
+          error: "Venice AI Image API error",
+          response: "I'm having trouble generating the image. Please check your API key and try again."
+        });
+      }
+
+      const veniceData = await veniceResponse.json();
+      
+      if (!veniceData.data || !veniceData.data[0] || !veniceData.data[0].url) {
+        return res.status(500).json({ 
+          error: "Invalid response from Venice AI",
+          response: "I received an unexpected response from Venice AI image generation. Please try again."
+        });
+      }
+
+      res.json({ 
+        image_url: veniceData.data[0].url,
+        model: veniceData.model || model,
+        usage: veniceData.usage
+      });
+
+    } catch (error) {
+      console.error('Venice AI image generation error:', error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        response: "I'm experiencing technical difficulties with image generation. Please try again in a moment."
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Start automatic biometric simulation

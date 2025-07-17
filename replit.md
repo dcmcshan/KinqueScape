@@ -109,6 +109,8 @@ Preferred communication style: Simple, everyday language.
 - **IMPLEMENTED 1/16/2025**: Comprehensive scape rules engine for biometric triggers and device automation
 - **ENHANCED 1/16/2025**: Venice AI chat with complete schema knowledge for developing escape room scenarios
 - **ADDED 1/16/2025**: Smart Props and AI Chat sections to homepage with detailed feature showcases
+- **ENHANCED 1/17/2025**: Venice AI chat with image generation capabilities using Stable Diffusion models
+- **RESEARCHED 1/17/2025**: Custom smart props for adult entertainment escape rooms with BLE/WiFi integration
 
 ### Architecture Focus
 The application follows a clean architecture pattern with clear separation between presentation, business logic, and data layers. The shared schema approach ensures type safety across the full stack while the modular component structure supports easy feature additions and modifications.

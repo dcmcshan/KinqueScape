@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Bot, User, Loader2, Zap, Copy, Check, Save, FolderOpen, Download, FileText } from "lucide-react";
+import { Send, Bot, User, Loader2, Zap, Copy, Check, Save, FolderOpen, Download, FileText, Image, Camera } from "lucide-react";
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  image_url?: string;
+  image_prompt?: string;
 }
 
 interface ApiUsage {
@@ -36,6 +38,7 @@ export default function ChatPage() {
   const [savedMessageId, setSavedMessageId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -53,8 +56,72 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+  const generateImage = async (prompt: string) => {
+    setIsGeneratingImage(true);
+    
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: `Generate image: ${prompt}`,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+
+    try {
+      const response = await fetch('/api/chat/venice/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          style: 'naturalistic',
+          model: 'playground-v2.5'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `I've generated an image based on your prompt: "${prompt}"`,
+        image_url: data.image_url,
+        image_prompt: prompt,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Image generation error:', error);
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "I'm having trouble generating the image right now. This could be due to API configuration or Venice AI service issues.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+
+    // Check if user wants image generation
+    const imageMatch = inputMessage.match(/^(generate|create|make)\s+(image|picture|photo)\s*:?\s*(.+)/i);
+    if (imageMatch) {
+      const prompt = imageMatch[3].trim();
+      setInputMessage("");
+      await generateImage(prompt);
+      return;
+    }
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -329,6 +396,21 @@ export default function ChatPage() {
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap pr-8">{message.content}</p>
+                      {message.image_url && (
+                        <div className="mt-3">
+                          <img 
+                            src={message.image_url} 
+                            alt={message.image_prompt || "Generated image"} 
+                            className="max-w-full h-auto rounded-lg border border-border"
+                            loading="lazy"
+                          />
+                          {message.image_prompt && (
+                            <p className="text-xs text-muted-foreground mt-2 italic">
+                              Prompt: {message.image_prompt}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between mt-2">
                         <p className="text-xs opacity-70">
                           {formatTime(message.timestamp)}
@@ -410,57 +492,76 @@ export default function ChatPage() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask anything or request a 'scape rule..."
+                  placeholder="Ask anything, request a 'scape rule, or 'generate image: your prompt'..."
                   className="flex-1"
-                  disabled={isLoading}
+                  disabled={isLoading || isGeneratingImage}
                 />
                 <Button 
                   onClick={sendMessage} 
-                  disabled={!inputMessage.trim() || isLoading}
+                  disabled={!inputMessage.trim() || isLoading || isGeneratingImage}
                   className="tron-button"
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isGeneratingImage ? (
+                    <Image className="w-4 h-4" />
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
                 </Button>
               </div>
+              {isGeneratingImage && (
+                <div className="mt-2 flex items-center text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Generating image with Venice AI...
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Usage Guidelines */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="tron-border">
             <CardHeader>
-              <CardTitle className="text-sm tron-text">Escape Room Design</CardTitle>
+              <CardTitle className="text-sm tron-text">Text Chat</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground">
-                Get help with room layouts, puzzle design, theme development, and participant flow optimization.
+                Get help with room layouts, puzzle design, scape rules, and adult entertainment concepts.
               </p>
             </CardContent>
           </Card>
 
           <Card className="tron-border">
             <CardHeader>
-              <CardTitle className="text-sm tron-text">Smart Device Integration</CardTitle>
+              <CardTitle className="text-sm tron-text">Image Generation</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground">
-                Discuss BLE/WiFi connectivity, device synchronization, and biometric monitoring systems.
+                Type "generate image: your prompt" to create custom visuals for props, room designs, or concepts.
               </p>
             </CardContent>
           </Card>
 
           <Card className="tron-border">
             <CardHeader>
-              <CardTitle className="text-sm tron-text">Business Strategy</CardTitle>
+              <CardTitle className="text-sm tron-text">Smart Props</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground">
-                Explore monetization models, voyeurism features, and adult entertainment market strategies.
+                Discuss custom prop designs, BLE/WiFi connectivity, and biometric integration strategies.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="tron-border">
+            <CardHeader>
+              <CardTitle className="text-sm tron-text">Scape Rules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Create sophisticated automation rules with biometric triggers and device control logic.
               </p>
             </CardContent>
           </Card>
